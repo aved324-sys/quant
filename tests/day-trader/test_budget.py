@@ -20,8 +20,8 @@ PRICES = {"AAPL": 341.27, "AXP": 309.84, "GOOGL": 353.78, "KO": 90.11, "BAC": 53
 # the contract's v2 config, key for key
 CONTRACT_CFG = {
     "budget": 5000, "cash_buffer_pct": 10, "max_position_pct": 75, "max_order_usd": 4000, "min_order_usd": 5,
-    "max_loss_per_trade_usd": 50, "max_daily_loss_usd": 150, "max_trades_per_day": 3, "max_orders_per_day": 10,
-    "min_reward_risk": 1.0, "require_stop": True,
+    "max_loss_per_trade_usd": 50, "slippage_per_share": 0.02, "max_daily_loss_usd": 150, "max_trades_per_day": 3,
+    "max_orders_per_day": 10, "min_reward_risk": 1.0, "require_stop": True,
     "no_entries_before": "09:45", "no_entries_after": "15:30", "flat_by": "15:55",
     "fractional": False, "broker": "alpaca", "paper": True, "blocked": [],
     "allow_options": False, "allow_margin": False, "allow_short": False, "pdt_guard": False,
@@ -101,7 +101,8 @@ class TheReel(unittest.TestCase):
             "symbol": "TSLA", "side": "buy", "qty": "8", "type": "market", "time_in_force": "day",
             "order_class": "bracket", "take_profit_limit_price": "370.04", "stop_loss_stop_price": "358.32",
             "plan": {"entry": 364.18, "stop": 358.32, "target": 370.04, "risk_per_share": 5.86,
-                     "max_loss": 46.88, "setup": "orb", "entry_time": "10:15 AM", "flat_by": "15:55"}})
+                     "max_loss": 46.88, "slippage_per_share": 0.02, "max_loss_slipped": 47.04,
+                     "setup": "orb", "entry_time": "10:15 AM", "flat_by": "15:55"}})
         self.assertIn("bound by your $50 max loss", why)
         self.assertIn("$46.88", why)
 
@@ -225,7 +226,7 @@ class PlanRules(unittest.TestCase):
 
     def test_under_the_minimum_order(self):
         cheap = plan(symbol="ABC", entry=4.0, stop=3.0, target=5.0)
-        s = size.size_trade(cheap, cfg(max_loss_per_trade_usd=1), today=TODAY)
+        s = size.size_trade(cheap, cfg(max_loss_per_trade_usd=1, slippage_per_share=0), today=TODAY)
         self.assertEqual(s["qty"], 1)
         self.assertIn("under your $5 minimum order", s["refusal"])
         self.assertIsNone(size.bracket_order(s))
@@ -372,3 +373,24 @@ class WeightsMode(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Slippage(unittest.TestCase):
+    """slippage_per_share is added to the risk a share before the max-loss limit."""
+
+    def test_a_tight_stop_gets_fewer_shares(self):
+        tight = plan(symbol="ABC", entry=10.00, stop=9.90, target=10.20)
+        big = dict(max_order_usd=20000, max_position_pct=100, budget=20000)
+        s0 = size.size_trade(tight, cfg(slippage_per_share=0, **big), today=TODAY)
+        s2 = size.size_trade(tight, cfg(**big), today=TODAY)
+        self.assertEqual((s0["qty"], s0["max_loss"]), (500, 50.0))
+        self.assertEqual((s2["qty"], s2["max_loss_slipped"]), (416, 49.92))
+        self.assertIn("(0.10 risk + 0.02 slippage)", s2["limits"][0]["how"])
+
+    def test_tsla_is_unchanged_at_8_shares(self):
+        s = size.size_trade(plan(), cfg(), today=TODAY)
+        self.assertEqual((s["qty"], s["max_loss"], s["max_loss_slipped"]), (8, 46.88, 47.04))
+
+    def test_negative_slippage_is_refused(self):
+        with self.assertRaises(size.SizeError):
+            size.size_trade(plan(), cfg(slippage_per_share=-0.01), today=TODAY)

@@ -66,8 +66,9 @@ bars), `--offline FILE` (a saved Yahoo chart JSON, `.json` or `.json.gz`),
    close, or 1:00 PM on an NYSE early-close day). Green, which means target
    first or above the entry at `--until`.
    R is +1 at a 1R target, -1 at the stop, and otherwise the distance from
-   the entry at `--until` divided by the risk. A gap through the stop still
-   counts as -1R here. A real fill can be worse.
+   the entry at `--until` divided by the risk. A bar that OPENS past the
+   stop fills at that open, not at the stop, so a gap costs more than -1R,
+   in the replays and in the history. A real fill can be worse still.
 4. **The history.** The plan's own rule (the same opening range, stop rule
    and target R) runs again on every one of those past sessions. That is
    what really happened, not a simulation.
@@ -83,7 +84,17 @@ bars), `--offline FILE` (a saved Yahoo chart JSON, `.json` or `.json.gz`),
 6. **Below the verdict**, when it applies: a line when more than 40 % of the
    replays hit neither (the price at `--until` decides those), and the
    average R when its sign goes against the lean. Those can only point the
-   other way because of the replays that hit neither.
+   other way because of the replays that hit neither. Then, always:
+   - **History check**: the history's target-first share with a 95 % Wilson
+     range, against break-even. With ~30 trades the range is about +-17
+     points, so it usually says the sample is too small to tell an edge from
+     none, and how many trades it would take.
+   - **What the replays are**: each bar is drawn on its own, so the replays
+     carry the stock's recent drift and swings but not the breakout's
+     follow-through or failure. They test the stop and target against recent
+     volatility; they cannot show an edge. Only the history can, and only
+     with enough trades.
+   - The average loss at the stop, when gaps made it worse than -1R.
 
 **The seed.** The draws come from Python's `random.Random(seed)`, seed 19 by
 default. Same plan, same data, same seed: the same numbers, on any machine.
@@ -130,12 +141,20 @@ History: the same rule on each of those 59 real sessions fired 33 times:
 13 target, 15 stop, 5 neither. Average R -0.062.
 Close to a coin flip: target first 29.4 % vs stop first 25.5 %.
 45.1 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides those.
+History check: target first in 13 of 28 trades that hit a side (46 %, 95 % range 30 to 64 %) against 50 % to break even: the sample is too small to tell an edge from none. Seeing a 10-point edge reliably takes about 197 such trades.
+The replays draw each bar on its own from the last 59 sessions, so they show what this stock's recent drift and swings do to this stop and target, not whether the breakout has an edge: that is the history's job. 10,000 replays make the odds look precise; they are not.
 ```
 
 At 1R the target has to come first in half of the replays that hit one
 side. It did in 53.6 %. The replays came out close to a coin flip, and the
-real history was slightly worse than even. That is the honest answer for this setup, and it is what
-the user should hear before `/trader-budget` sizes 8 shares.
+real history was slightly worse than even, and with 28 trades the range
+(30 to 64 %) covers anything from a clear loser to a clear winner. Nothing
+here shows an edge. That is the honest answer for this setup, and it is
+what the user should hear before `/trader-budget` sizes 8 shares.
+
+When the replays and the history disagree (a 2R plan on the same day: the
+replays say break-even, the history 26 % against the 33 % it needs), lead
+with the history and its range, not with the replays.
 
 ## Rules
 

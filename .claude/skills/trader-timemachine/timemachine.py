@@ -29,9 +29,10 @@ How the replays work (the reel's sim.py, same algorithm, same random draws):
      when the trade is still open at --until (default 16:00, the close, or
      13:00 on an NYSE early-close day).
      "green" = target first, or above the entry at --until (below for a sell).
-     R = the target's R at the target, -1 at the stop, otherwise
-     (price at --until - entry) / risk. A gap through the stop still counts
-     -1R here; a real fill can be worse.
+     R = the target's R at the target; at the stop, -1, or worse when the bar
+     OPENS past the stop (a gap: the fill is that open, not the stop); otherwise
+     (price at --until - entry) / risk. The same gap rule holds in the history.
+     A real fill can be worse still: halts, spreads, thin books.
   5. The price at --until: median and the 5th to 95th percentile of all
      replays (pct(a, q) = sorted a at index int(q * n)). The fan chart uses a
      second run of 2,000 paths with the same seed. The histogram has 24 bins
@@ -47,8 +48,13 @@ that breaks even at the plan's target R: 1 / (1 + R), so 50 % at 1R and 33 % at
   less than 5 points    "Close to a coin flip" (1R) / "Close to break-even" (other R)
   5 to 15 points        "Leans toward the target" / "Leans toward the stop"
   15 points or more     "Strongly toward the target" / "Strongly toward the stop"
-Below it: a note when more than 40 % of the replays hit neither (the price at
---until decides those), and the average R when its sign goes against the lean.
+Below it: the history's own verdict with a 95 % Wilson interval on its
+target-first share (with ~30 trades the interval is about +-17 points, so it
+rarely separates an edge from none), a reminder that the replays draw bars
+independently (they model recent drift and volatility, not the setup's edge),
+the average loss at the stop when gaps made it worse than -1R, a note when more
+than 40 % of the replays hit neither (the price at --until decides those), and
+the average R when its sign goes against the lean.
 
 5-minute bars only: Yahoo keeps 60 days of 5-min bars but only about 7 days of
 1-min bars, too few sessions for a fair pool. The run refuses with a plain
@@ -357,24 +363,28 @@ def simulate(pool, entry, stop, target, k, last, replays=10000, seed=19, window=
 
     rng = random.Random(seed)
     choice = rng.choice
-    outcomes, closes, paths = [], [], []
+    outcomes, closes, paths, stop_fills = [], [], [], []
     for n in range(replays):
         p = entry
         outcome = None
+        fill = None
         keep = n < SAMPLE_PATHS
         path = [entry]
         for i in range(k + 1, last + 1):
             o, h, l, c = choice(pool[slot(rng, i)])
             hi, lo, cl = p * h, p * l, p * c
             if outcome is None:
+                op = p * o
                 if long:
                     if lo <= stop:
                         outcome = "stop"        # both inside one bar: count the loss (conservative)
+                        fill = min(op, stop)    # a bar that opens below the stop fills at its open
                     elif hi >= target:
                         outcome = "target"
                 else:
                     if hi >= stop:
                         outcome = "stop"
+                        fill = max(op, stop)
                     elif lo <= target:
                         outcome = "target"
             p = cl
@@ -382,13 +392,17 @@ def simulate(pool, entry, stop, target, k, last, replays=10000, seed=19, window=
                 path.append(round(p, 2))
         outcomes.append(outcome or "close")
         closes.append(p)
+        stop_fills.append(fill)
         if keep:
             paths.append(path)
     cnt = {x: outcomes.count(x) for x in ("target", "stop", "close")}
     green = sum(1 for o, p in zip(outcomes, closes)
                 if o == "target" or (o == "close" and (p > entry if long else p < entry)))
-    Rs = [r_target if o == "target" else -1.0 if o == "stop" else ((p - entry) if long else (entry - p)) / risk
-          for o, p in zip(outcomes, closes)]
+    Rs = [r_target if o == "target" else
+          (((f - entry) if long else (entry - f)) / risk) if o == "stop" else
+          ((p - entry) if long else (entry - p)) / risk
+          for o, p, f in zip(outcomes, closes, stop_fills)]
+    stop_Rs = [x for x, o in zip(Rs, outcomes) if o == "stop"]
     srt = sorted(closes)
     # percentile bands per bar for the fan chart: a second run of 2,000 paths, same seed
     rng = random.Random(seed)
@@ -419,6 +433,7 @@ def simulate(pool, entry, stop, target, k, last, replays=10000, seed=19, window=
         "p_neither": round(cnt["close"] / replays, 4), "p_green": round(green / replays, 4),
         "median_close": round(pct(srt, 0.5), 2), "p5_close": round(pct(srt, 0.05), 2),
         "p95_close": round(pct(srt, 0.95), 2), "avg_R": round(statistics.mean(Rs), 3),
+        "avg_stop_R": round(statistics.mean(stop_Rs), 3) if stop_Rs else None,
         "r_at_target": r_target, "band_paths": BAND_PATHS, "bands": bands, "sample_paths": paths,
         "hist": {"lo": round(lo_, 2), "hi": round(hi_, 2), "bins": bins},
     }
@@ -448,6 +463,38 @@ def rule_stop(rule, oh, ol, entry, long):
     return cents_away(entry * (1 - frac) if long else entry * (1 + frac), long)
 
 
+def wilson(k, n, z=1.96):
+    """95 % Wilson score interval for k successes in n tries, as [low, high]; None when n is 0."""
+    if n <= 0:
+        return None
+    ph = k / float(n)
+    den = 1 + z * z / n
+    mid = (ph + z * z / (2 * n)) / den
+    half = z * math.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n)) / den
+    return [round(max(0.0, mid - half), 4), round(min(1.0, mid + half), 4)]
+
+
+def history_verdict(h):
+    """One line: can the history tell this setup from a coin weighted to break even?"""
+    ci = h.get("target_share_ci95")
+    rule = h.get("rule") or {}
+    if not ci or not rule:
+        return None
+    n = h["target"] + h["stop"]
+    even = 1.0 / (1.0 + float(rule.get("target_r") or 1.0))
+    share = h["target"] / float(n)
+    head = ("History check: target first in %d of %d trades that hit a side (%.0f %%, 95 %% range %.0f to %.0f %%) "
+            "against %.0f %% to break even" % (h["target"], n, 100 * share, 100 * ci[0], 100 * ci[1], 100 * even))
+    if ci[0] > even:
+        return head + ": an edge the sample can see, before costs."
+    if ci[1] < even:
+        return head + ": worse than break-even, and the sample can see it."
+    # trades that hit a side to detect a 10-point edge over break-even: two-sided 95 %, 80 % power
+    need = int(math.ceil((1.96 + 0.8416) ** 2 * even * (1 - even) / 0.01))
+    return (head + ": the sample is too small to tell an edge from none. Seeing a 10-point edge reliably "
+            "takes about %d such trades." % need)
+
+
 def history_replay(sessions, rule, last, side="buy"):
     """The plan's rule on every past full session: entry = the first bar after the
     opening range to close beyond it (up to the --until bar), then stop first, then
@@ -467,22 +514,27 @@ def history_replay(sessions, rule, last, side="buy"):
             continue
         t = round(e + rule["target_r"] * risk, 2) if long else round(e - rule["target_r"] * risk, 2)
         oc = None
+        fill = s
         for b in D[kk + 1:last + 1]:
             if (b["l"] <= s) if long else (b["h"] >= s):
                 oc = "stop"
+                fill = min(b["o"], s) if long else max(b["o"], s)   # gapped through: filled at the open
                 break
             if (b["h"] >= t) if long else (b["l"] <= t):
                 oc = "target"
                 break
         cl = D[last]["c"]
-        R = ((t - e) if long else (e - t)) / risk if oc == "target" else -1.0 if oc == "stop" else \
+        R = ((t - e) if long else (e - t)) / risk if oc == "target" else \
+            ((fill - e) if long else (e - fill)) / risk if oc == "stop" else \
             ((cl - e) if long else (e - cl)) / risk
         trades.append({"date": d, "time": clock12(OPEN_MIN + 5 * (kk + 1)), "entry": e, "stop": s, "target": t,
                        "outcome": oc or "close", "R": round(R, 2)})
+    n_t = sum(1 for x in trades if x["outcome"] == "target")
+    n_s = sum(1 for x in trades if x["outcome"] == "stop")
     return {
         "sessions": len(sessions), "triggered": len(trades),
-        "target": sum(1 for x in trades if x["outcome"] == "target"),
-        "stop": sum(1 for x in trades if x["outcome"] == "stop"),
+        "target": n_t, "stop": n_s,
+        "target_share_ci95": wilson(n_t, n_t + n_s),
         "close": sum(1 for x in trades if x["outcome"] == "close"),
         "green": sum(1 for x in trades if x["R"] > 0),
         "avg_R": round(statistics.mean(x["R"] for x in trades), 3) if trades else None,
@@ -662,9 +714,21 @@ def verdict(mc):
             "it did in %.0f %% (%s)." % (head, round(r, 2), 100 * even, 100 * share, odds))
 
 
-def verdict_notes(mc):
+def verdict_notes(mc, history=None):
     """The lines printed right below the verdict, so nothing reads as one-sided."""
     notes = []
+    tail = []
+    hv = history_verdict(history or {})
+    if hv:
+        tail.append(hv)
+    if mc.get("pool_sessions"):
+        tail.append("The replays draw each bar on its own from the last %d sessions, so they show what this "
+                     "stock's recent drift and swings do to this stop and target, not whether the breakout has an "
+                     "edge: that is the history's job. %s replays make the odds look precise; they are not."
+                     % (mc["pool_sessions"], "{:,}".format(mc.get("replays") or 0)))
+    if mc.get("avg_stop_R") is not None and mc["avg_stop_R"] < -1.005:
+        tail.append("Replays that hit the stop lost %.2fR on average, not -1R: some bars opened past the stop."
+                     % mc["avg_stop_R"])
     pn = mc.get("p_neither", 0)
     if pn > MANY_NEITHER and lean(mc) is not None:
         notes.append("%.1f %% of the replays hit neither by %s; the price at %s decides those."
@@ -673,7 +737,7 @@ def verdict_notes(mc):
     avg = mc.get("avg_R")
     if lv and abs(lv[0]) >= COIN_FLIP and avg is not None and avg != 0 and (avg > 0) != (lv[0] > 0):
         notes.append("Average R is %+.3f all the same: the replays that hit neither pull it the other way." % avg)
-    return notes
+    return notes + tail
 
 
 def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=None, source="yahoo"):
@@ -746,7 +810,7 @@ def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=No
         "mc": mc,
         "history": history,
         "verdict": verdict(mc),
-        "verdict_notes": verdict_notes(mc),
+        "verdict_notes": verdict_notes(mc, history),
         "warnings": warn,
         "note": ("A simulation built from %s's own last %d full sessions. It is not a prediction: earnings, "
                  "news and halts can do things those sessions never did. Same seed, same numbers." % (sym, len(sessions))),

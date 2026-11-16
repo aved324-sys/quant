@@ -12,6 +12,7 @@ import urllib.error
 from contextlib import redirect_stdout, redirect_stderr
 
 from _load import load, FIX
+MC_NOTE = ("The replays draw each bar on its own from the last 59 sessions, so they show what this stock's recent drift and swings do to this stop and target, not whether the breakout has an edge: that is the history's job. 10,000 replays make the odds look precise; they are not.")
 
 tm = load("trader-timemachine", "timemachine")
 
@@ -126,8 +127,13 @@ class Reel(unittest.TestCase):
         # 1R breaks even at 50 % of the replays that hit one side; the reel's target got 53.6 %
         gap, share, even = tm.lean(self.doc["mc"])
         self.assertEqual((round(share, 3), even), (0.536, 0.5))
-        self.assertEqual(self.doc["verdict_notes"],
-                         ["45.1 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides those."])
+        self.assertEqual(self.doc["verdict_notes"], [
+            "45.1 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides those.",
+            "History check: target first in 13 of 28 trades that hit a side (46 %, 95 % range 30 to 64 %) against "
+            "50 % to break even: the sample is too small to tell an edge from none. Seeing a 10-point edge "
+            "reliably takes about 197 such trades.",
+            MC_NOTE])
+        self.assertEqual(self.doc["history"]["target_share_ci95"], [0.2953, 0.6419])
 
     def test_bands_start_at_the_entry(self):
         m = self.doc["mc"]
@@ -423,11 +429,16 @@ class Plans(unittest.TestCase):
         # stop 362.00, 2R target 368.54: 33.5 % vs 62.4 % looks lopsided, but 2R only needs a third
         doc = machine(plan(stop=362.0, target=368.54, stop_rule="pct"))
         m = doc["mc"]
-        self.assertEqual((m["r_at_target"], m["p_target"], m["p_stop"], m["avg_R"]), (2.0, 0.3345, 0.6238, 0.068))
+        self.assertEqual((m["r_at_target"], m["p_target"], m["p_stop"], m["avg_R"]), (2.0, 0.3345, 0.6238, 0.067))
         self.assertEqual(doc["verdict"], "Close to break-even: at 2R the target has to come first in 33 % of the "
                                          "replays that hit one side; it did in 35 % (target first 33.5 % vs stop "
                                          "first 62.4 %).")
-        self.assertEqual(doc["verdict_notes"], [])
+        # the replays say break-even; the real sessions say 26 % against the 33 % it needs, with a wide range
+        self.assertEqual(doc["verdict_notes"], [
+            "History check: target first in 7 of 27 trades that hit a side (26 %, 95 % range 13 to 45 %) against "
+            "33 % to break even: the sample is too small to tell an edge from none. Seeing a 10-point edge "
+            "reliably takes about 175 such trades.",
+            MC_NOTE])
 
     def test_2r_on_the_fixture_a_clear_lean(self):
         # the reel's entry and stop with a 2R target 375.90: the target first only 4.0 % vs stop first 25.6 %
@@ -440,7 +451,11 @@ class Plans(unittest.TestCase):
                                          "first 25.6 %).")
         self.assertEqual(doc["verdict_notes"], [
             "70.5 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides those.",
-            "Average R is +0.042 all the same: the replays that hit neither pull it the other way."])
+            "Average R is +0.042 all the same: the replays that hit neither pull it the other way.",
+            "History check: target first in 3 of 20 trades that hit a side (15 %, 95 % range 5 to 36 %) against "
+            "33 % to break even: the sample is too small to tell an edge from none. Seeing a 10-point edge "
+            "reliably takes about 175 such trades.",
+            MC_NOTE])
         text = "\n".join(tm.report(doc))
         self.assertIn(doc["verdict"] + "\n" + doc["verdict_notes"][0] + "\n" + doc["verdict_notes"][1], text)
 
@@ -604,11 +619,39 @@ class Cli(unittest.TestCase):
         self.assertTrue(any(l.startswith("   364.18 |*") and l.endswith("  entry") for l in lines))
         self.assertIn("10:15", text)
         self.assertIn("4:00", text)
-        self.assertEqual(lines[-2:], ["Close to a coin flip: target first 29.4 % vs stop first 25.5 %.",
-                                      "45.1 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides those."])
+        self.assertEqual(lines[-4:-2], ["Close to a coin flip: target first 29.4 % vs stop first 25.5 %.",
+                                        "45.1 % of the replays hit neither by 4:00 PM; the price at 4:00 PM decides "
+                                        "those."])
+        self.assertEqual(lines[-1], MC_NOTE)
         code, again, _ = run(["chart", "--plan", self.plan, "--offline", TSLA, "--now", NOW])
         self.assertEqual(again, text)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Honesty(unittest.TestCase):
+    def test_wilson_interval(self):
+        self.assertEqual(tm.wilson(13, 28), [0.2953, 0.6419])
+        self.assertIsNone(tm.wilson(0, 0))
+        lo, hi = tm.wilson(500, 1000)
+        self.assertLess(hi - lo, 0.07)
+
+    def test_history_check_sees_a_real_edge_and_a_real_loser(self):
+        rule = {"target_r": 1.0}
+        good = {"target": 140, "stop": 60, "target_share_ci95": tm.wilson(140, 200), "rule": rule}
+        bad = {"target": 60, "stop": 140, "target_share_ci95": tm.wilson(60, 200), "rule": rule}
+        self.assertTrue(tm.history_verdict(good).endswith("an edge the sample can see, before costs."))
+        self.assertTrue(tm.history_verdict(bad).endswith("worse than break-even, and the sample can see it."))
+
+    def test_a_gap_through_the_stop_fills_at_the_open(self):
+        # one past session: flat bars, then one that opens 2 % lower; the stop is 1 % under the entry
+        flat = (1.0, 1.0, 1.0, 1.0)
+        gap = (0.98, 0.98, 0.97, 0.975)
+        pool = [[flat] for _ in range(tm.SESSION_BARS)]
+        pool[10] = [gap]
+        m = tm.simulate(pool, 100.0, 99.0, 102.0, 8, 20, replays=10, seed=1, window=0)
+        self.assertEqual(m["p_stop"], 1.0)
+        self.assertEqual(m["avg_stop_R"], -2.0)
+        self.assertEqual(m["avg_R"], -2.0)

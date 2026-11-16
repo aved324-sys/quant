@@ -54,7 +54,8 @@ If `trader/config.json` does not exist, copy `config.example.json` into
 
 - **budget**: how much money this is for. Only money they can afford to lose.
 - **cash_buffer_pct**: how much always stays in cash (default 10).
-- **max_loss_per_trade_usd**: the most one trade may lose if the stop fills at the stop (default 50).
+- **max_loss_per_trade_usd**: the most one trade may lose at the stop, slippage included (default 50).
+- **slippage_per_share**: what the stop, a market order once it triggers, may give up past its price (default 0.02). It is added to the risk a share before sizing, so a tight stop with many shares cannot quietly overrun the max loss. Raise it for thin or fast stocks; 0 turns it off.
 - **max_position_pct**, **max_order_usd**, **min_order_usd**: the biggest position (75% of the
   budget), the biggest order ($4,000) and the smallest order ($5).
 - The day limits trader-risk enforces: **max_daily_loss_usd** (150), **max_trades_per_day** (3),
@@ -74,7 +75,7 @@ the smallest of four limits:
 
 | limit | shares |
 | --- | --- |
-| max loss | `max_loss_per_trade_usd` / risk a share (entry minus stop) |
+| max loss | `max_loss_per_trade_usd` / (risk a share + `slippage_per_share`) |
 | position cap | budget x `max_position_pct` / entry |
 | max order | `max_order_usd` / entry |
 | cash | (budget minus the cash buffer) / entry, never more than the cash in `trader/portfolio.json` |

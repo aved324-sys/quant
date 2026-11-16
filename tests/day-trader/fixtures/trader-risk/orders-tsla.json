@@ -22,6 +22,8 @@
         "target": 370.04,
         "risk_per_share": 5.86,
         "max_loss": 46.88,
+        "slippage_per_share": 0.02,
+        "max_loss_slipped": 47.04,
         "setup": "orb",
         "entry_time": "10:15 AM",
         "flat_by": "15:55"

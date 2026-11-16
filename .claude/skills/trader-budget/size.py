@@ -16,7 +16,12 @@ checks the order and trader-broker asks you yes or no.
 How many shares. Whole shares only: Alpaca takes no fractions in a bracket.
 
     shares = floor of the smallest of
-      max loss       max_loss_per_trade_usd / risk per share (entry minus stop)
+      max loss       max_loss_per_trade_usd / (risk per share + slippage_per_share)
+                     risk per share = entry minus stop; slippage_per_share (default
+                     0.02) is what a stop order, which fills as a market order, can
+                     give up past the stop. It matters most with a tight stop and
+                     many shares: a 0.10 stop and 500 shares is $50 at the stop
+                     but $60 with 0.02 of slippage.
       position cap   budget x max_position_pct / entry
       max order      max_order_usd / entry
       cash           (budget minus the cash buffer) / entry
@@ -66,6 +71,7 @@ DEFAULTS = {
     "max_order_usd": 4000,
     "min_order_usd": 5,
     "max_loss_per_trade_usd": 50,
+    "slippage_per_share": 0.02,
     "max_daily_loss_usd": 150,
     "max_trades_per_day": 3,
     "max_orders_per_day": 10,
@@ -363,11 +369,19 @@ def size_trade(plan, cfg, budget=None, limit=None, price=None, cash=None, today=
         cash_note = "cash %s in trader/portfolio.json minus the %s buffer" % (money(cash), money(cash_buffer))
     available = max(round(available, 2), 0.0)
 
+    slip = _f(c.get("slippage_per_share")) or 0.0
+    if slip < 0:
+        raise SizeError("slippage_per_share must be 0 or more")
+    slip = round_cent(slip)
+    risk_slip = round(risk + slip, 2)
     limits = []
     max_loss = _f(c.get("max_loss_per_trade_usd"))
     if max_loss:
-        limits.append({"name": "max loss", "usd": max_loss, "per": risk, "shares": shares_for(max_loss, risk),
-                       "how": "%s max loss / %s risk a share" % (money(max_loss), _price(risk))})
+        how = "%s max loss / %s risk a share" % (money(max_loss), _price(risk))
+        if slip:
+            how = "%s max loss / (%s risk + %s slippage) a share" % (money(max_loss), _price(risk), _price(slip))
+        limits.append({"name": "max loss", "usd": max_loss, "per": risk_slip,
+                       "shares": shares_for(max_loss, risk_slip), "how": how})
     cap_pct = _f(c.get("max_position_pct"))
     if cap_pct:
         cap = round(budget * cap_pct / 100.0, 2)
@@ -386,12 +400,14 @@ def size_trade(plan, cfg, budget=None, limit=None, price=None, cash=None, today=
         l["binds"] = l["name"] == bound[0]
     cost = round(qty * ref, 2)
     loss = round(qty * risk_c / 100.0, 2)
+    loss_slipped = round(qty * risk_slip, 2)
     refusal = None
     if qty == 0:
         if bound[0] == "max loss":
-            refusal = ("one share risks %s (entry %s minus stop %s), more than your %s max loss per trade. "
+            refusal = ("one share risks %s (entry %s minus stop %s%s), more than your %s max loss per trade. "
                        "No order. Skip this trade, or plan a closer stop with trader-exit."
-                       % (money(risk), _price(ref), _price(stop), money(max_loss)))
+                       % (money(risk_slip), _price(ref), _price(stop),
+                          (", plus %s slippage" % _price(slip)) if slip else "", money(max_loss)))
         else:
             refusal = ("one share of %s costs %s, more than your %s limit (%s). No order."
                        % (sym, money(ref), bound[0], limits[[l["name"] for l in limits].index(bound[0])]["how"]))
@@ -410,7 +426,8 @@ def size_trade(plan, cfg, budget=None, limit=None, price=None, cash=None, today=
         "stop_label": plan.get("stop_label", ""), "target_label": plan.get("target_label", ""),
         "budget": budget, "cash_buffer_pct": buf_pct, "cash_buffer": cash_buffer, "cash_available": available,
         "max_loss_per_trade_usd": max_loss, "limits": limits, "qty": qty, "bound_by": bound[0],
-        "cost": cost, "max_loss": loss, "flat_by": plan.get("flat_by") or c.get("flat_by"),
+        "cost": cost, "max_loss": loss, "slippage_per_share": slip, "max_loss_slipped": loss_slipped,
+        "flat_by": plan.get("flat_by") or c.get("flat_by"),
         "order_type": "limit" if limit is not None else "market", "refusal": refusal,
     }
 
@@ -435,7 +452,9 @@ def bracket_order(s):
         "stop_loss_stop_price": _price(s["stop"]),
         "why": why,
         "plan": {"entry": s["entry"], "stop": s["stop"], "target": s["target"],
-                 "risk_per_share": s["risk_per_share"], "max_loss": s["max_loss"], "setup": s["setup"],
+                 "risk_per_share": s["risk_per_share"], "max_loss": s["max_loss"],
+                 "slippage_per_share": s["slippage_per_share"], "max_loss_slipped": s["max_loss_slipped"],
+                 "setup": s["setup"],
                  "entry_time": s["entry_time"], "flat_by": s["flat_by"]},
     })
     return o
@@ -469,7 +488,14 @@ def plan_report(s, order, notes=()):
     lines.append("Size: %d shares of %s = %s at %s. Max loss at the stop: %d x %s = %s."
                  % (s["qty"], s["symbol"], money(s["cost"]), _price(s["entry"]), s["qty"],
                     _price(s["risk_per_share"]), money(s["max_loss"])))
-    lines.append("A stop is an order, not a promise: in a fast market it can fill below %s." % _price(s["stop"]))
+    if s["slippage_per_share"]:
+        lines.append("With %s slippage a share at the stop: %d x %s = %s. A stop is an order, not a promise: "
+                     "a gap or a halt can fill it further below %s."
+                     % (_price(s["slippage_per_share"]), s["qty"],
+                        _price(round(s["risk_per_share"] + s["slippage_per_share"], 2)),
+                        money(s["max_loss_slipped"]), _price(s["stop"])))
+    else:
+        lines.append("A stop is an order, not a promise: in a fast market it can fill below %s." % _price(s["stop"]))
     lines.append("")
     lines.append("Proposed bracket order (place_stock_order arguments, nothing has been placed):")
     how = "limit %s" % order["limit_price"] if order["type"] == "limit" else "market"
