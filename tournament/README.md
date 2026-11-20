@@ -24,3 +24,13 @@ Gen 2 = version 2.0 of the same four scripts. The SPX 0DTE spread simulator (`pi
 2. New results go in a NEW document `generations/gen_<N+1>` and are appended to `generations[]` in `TOURNAMENT_STATE.json`. Never edit or delete an earlier generation.
 3. Out-of-sample data is looked at no more than twice per agent (`oosTouches`). An agent that fails in-sample does not get an OOS look.
 4. `deploy/current` is the only document that is overwritten. It changes only when an agent or ensemble passes every gate.
+
+## Python H1/H2 engine (no TradingView quota)
+`research/vrp_engine.py` mirrors `pine/gen3_h1h2_condor_vrp.pine` and adds per-day P&L, bootstrap CIs, a worst-day
+stress list and the pre-registered kill-criterion verdicts. Feed it TradingView chart exports:
+
+    python3 tournament/research/vrp_engine.py --spx SPX_5m.csv --vix1d VIX1D_5m.csv --vix VIX_5m.csv --vix3m VIX3M_5m.csv \
+        --events events.txt --atm-scale <from anchor check> --out h1h2_results.json
+
+Tests: `python3 -m pytest tests/tournament -q`. `research/cost_hurdle_synthetic.json` holds the break-even
+implied/realized ratio (~1.15) from synthetic markets.

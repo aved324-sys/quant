@@ -1043,6 +1043,17 @@
    "detail": "Queued for the next quota window: (1) VIX1D anchor check, which sets atmScale so model credits match real ATM IV; (2) two economic-calendar calls for the H2 event dates; (3) the H1/H2 six-book run; (4) the H3 MNQ Deep Backtest. Five calls in total.",
    "oosImpact": "n/a",
    "status": "queued"
+  },
+  {
+   "id": "m304",
+   "gen": 3,
+   "agent": "All",
+   "kind": "note",
+   "date": "2026-11-20",
+   "title": "Cost hurdle: implied must exceed realized vol by ~15%",
+   "detail": "Python engine (research/vrp_engine.py, 7 tests passing) run on synthetic GBM markets with known implied and realized vol, H1 rules and costs. Break-even implied/realized ratio is about 1.15 at both 10% and 15% realized vol. At 1.00 (no premium) the book loses 8-9% a year while still winning 80% of days, so win rate is not evidence for this structure. At 1.20 it earns about 2.5-3.4% a year, at 1.40 about 10-11%. Consequence: a VIX1D anchor bias of 10% is enough to fake an edge, so the anchor check runs before H1. Synthetic markets have no jumps or fat tails, so this is a cost hurdle, not a tail-risk estimate.",
+   "oosImpact": "n/a",
+   "status": "note"
   }
  ],
  "deploy": {
