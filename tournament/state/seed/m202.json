@@ -1,0 +1,1 @@
+{"id": "m202", "gen": 3, "agent": "Alpha", "kind": "mutation", "date": "2026-11-20", "title": "Proposed: retire Alpha", "detail": "Two generations, four cells, no in-sample PF above 1.05, one OOS look already spent (0.78 / 0.96). Further mutation would be curve-fitting.", "oosImpact": "pending", "status": "proposed"}

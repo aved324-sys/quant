@@ -9,13 +9,15 @@
 
 Dashboard: https://claude.ai/artifact/KaAbKZpaJXjBPz3e5epx63 (private until shared from its Share menu)
 
-## TradingView scripts (Gen 1, v1.0)
+## TradingView scripts (Gen 1 = v1.0, Gen 2 = v2.0)
 | Agent | script_id |
 |---|---|
 | Alpha | `USER;dd41a45061b447b3ab5876ecd07cf2cd` (saved before the margin fix; run with margin inputs in_16/in_17 = 10) |
 | Beta | `USER;0b8e71f436c34da7a50b42c675249a03` |
 | Gamma | `USER;5e08f45326fb45c4855ad8425e37eee7` |
 | Delta | `USER;d0b2414640e746f5abc7e91c7ab01183` |
+
+Gen 2 = version 2.0 of the same four scripts. The SPX 0DTE spread simulator (`pine/gen2_spx_spread_sim.pine`) is run inline as an indicator on SP:SPX 5m; inputs pick the agent (Beta/Delta) and stop variant (A/B), and OOS stats stay hidden unless "Reveal OOS" is switched on.
 
 ## Append-only protocol for Gen N+1
 1. Mutations are calibrated on IS data only and logged as `mutations/m<gen><nn>` before any run.

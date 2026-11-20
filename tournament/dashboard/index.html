@@ -216,8 +216,8 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
                 const is = r.is, oos = r.oos, m = oos || is;
                 return html`
                   <tr key=${'r' + i}>
-                    <td class="l"><span class="inline-flex items-center gap-2"><${AgentDot} a=${r.agent} tok=${tok}/>${r.agent}</span></td>
-                    <td class="l">${r.instrument} <span class="text-muted text-xs">${r.timeframe}</span></td>
+                    <td class="l"><span class="inline-flex items-center gap-2"><${AgentDot} a=${r.agent} tok=${tok}/>${r.agent}</span>${r.variant && html`<div class="text-xs text-muted">${r.variant}</div>`}</td>
+                    <td class="l" title=${r.note || ''}>${r.instrument} <span class="text-muted text-xs">${r.timeframe}</span>${r.pricing === 'MODELED' && html` <span class="pill p-pend">MODELED</span>`}</td>
                     <td class="l"><${Verdict} v=${a.verdict}/></td>
                     <td class="num">${r.gen}</td>
                     <td class="num">${a.n}</td>
@@ -243,6 +243,8 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
             </tbody>
           </table>
         </div>
+        ${shown.some(x => x.r.note && x.r.status !== 'PENDING') && html`<div class="card p-4 flex flex-col gap-2"><span class="eyebrow">Cell notes</span>
+          <ul class="flex flex-col gap-1 text-sm" style=${{ maxWidth: '96ch' }}>${shown.filter(x => x.r.note && x.r.status !== 'PENDING').map((x, i) => html`<li key=${'n' + i}><strong>Gen ${x.r.gen} · ${x.r.agent} · ${x.r.instrument}${x.r.variant ? ' (' + x.r.variant + ')' : ''}:</strong> ${x.r.note}${x.r.diagnostics ? ' Signals ' + x.r.diagnostics.signals + ', rejected by strike rules ' + x.r.diagnostics.rejectedDeltaOrPin + ', by credit floor ' + x.r.diagnostics.rejectedCreditFloor + '.' : ''}</li>`)}</ul></div>`}
         <p class="text-muted text-xs">Metric columns show OOS values when an OOS run exists, otherwise IS. Hold time = average bars × 5 minutes. Futures and SPX are Section 1256 (60/40); SPY options are not.</p>
       </section>`;
   }
@@ -257,7 +259,7 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
   }
   function Evolution({ rows, gens, tok }) {
     const [inst, setInst] = useState('MNQ1!');
-    const futRows = rows.filter(r => r.status !== 'PENDING');
+    const futRows = rows.filter(r => r.status !== 'PENDING' && !r.variant && r.pricing !== 'MODELED');
     const latest = gens.length ? gens[gens.length - 1].gen : null;
     const agents = ['Alpha', 'Beta', 'Gamma', 'Delta'];
     const byGen = gens.map(g => {
@@ -302,7 +304,7 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
               <//>
             <//>
           <//>
-          <${ChartFrame} title=${'Equity growth by generation · ' + inst} note="Net return over the tested window at 1% risk per trade on $50k (OOS where run, else IS).">
+          <${ChartFrame} title=${'Equity growth by generation · ' + inst} note="Net return over the tested window at 1% risk per trade on that generation's starting capital (Gen 1 $50k, Gen 2 $100k). OOS where run, else IS.">
             <${R.ResponsiveContainer}>
               <${R.BarChart} data=${byGen} margin=${{ top: 8, right: 16, bottom: 4, left: 0 }}>
                 <${R.CartesianGrid} stroke=${tok.line} strokeDasharray="2 4" vertical=${false}/>
@@ -316,7 +318,7 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
             <//>
           <//>
         </div>
-        <${ChartFrame} title=${'Gen ' + (latest ?? '—') + ' · in-sample vs out-of-sample PF per cell'} note="Every cell sits below the 1.45 gate. Only Alpha has an OOS run; the others failed in-sample, so their OOS data was not looked at." h=${300}>
+        <${ChartFrame} title=${'Gen ' + (latest ?? '—') + ' · in-sample vs out-of-sample PF per futures cell'} note="Gate line at 1.45, break-even at 1.0. A cell gets an OOS run only after it passes the in-sample gates." h=${300}>
           <${R.ResponsiveContainer}>
             <${R.BarChart} data=${cells} margin=${{ top: 8, right: 16, bottom: 4, left: 0 }}>
               <${R.CartesianGrid} stroke=${tok.line} strokeDasharray="2 4" vertical=${false}/>
@@ -331,7 +333,7 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
             <//>
           <//>
         <//>
-        <p class="text-muted text-xs" style=${{ maxWidth: '80ch' }}>Trade-by-trade equity curves need each run's full trade list. TradingView returns at most 200 trades per call, so Gen 2 runs will export trade logs and these charts will gain per-trade curves.</p>
+        <p class="text-muted text-xs" style=${{ maxWidth: '80ch' }}>Trade-by-trade equity curves need each run's full trade list. TradingView returns at most 200 trades per call, so per-trade curves arrive once a generation's runs export full trade logs.</p>
       </section>`;
   }
 
@@ -422,7 +424,7 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
       <div class="flex flex-col gap-2">
         <h2 class="text-lg font-semibold">Pine Script v6 sources</h2>
         <p class="text-muted text-sm" style=${{ maxWidth: '80ch' }}>Bar-close signals, next-bar-open fills, no lookahead, and higher timeframes rebuilt from confirmed closes. Friction: $1 per contract per side plus 1 tick per side. Copy into TradingView's Pine Editor; the strategy sets 10% margin itself.</p>
-        ${Object.keys(pine).map(k => html`<${CopyBlock} key=${k} id=${'pine-' + k} label=${'TQ ' + k[0].toUpperCase() + k.slice(1) + ' · Gen 1'} sub=${(pine[k].split('\n').length) + ' lines'} code=${pine[k]} status=${html`<span class="pill p-fail">Research candidate · failed Gen 1</span>`}/>`)}
+        ${Object.keys(pine).map(k => { const g = deploy.pineGen || 1; const nm = k === 'spx_spread_sim' ? 'SPX 0DTE spread simulator (indicator)' : 'TQ ' + k[0].toUpperCase() + k.slice(1); return html`<${CopyBlock} key=${k} id=${'pine-' + k} label=${nm + ' · Gen ' + g} sub=${(pine[k].split('\n').length) + ' lines'} code=${pine[k]} status=${k === 'spx_spread_sim' ? html`<span class="pill p-pend">Modeled pricing · research tool</span>` : html`<span class="pill p-fail">Research candidate · failed Gen ${g}</span>`}/>`; })}
       </div>
     </section>`;
   }
@@ -492,10 +494,10 @@ select, .btn { background: var(--surface); color: var(--ink); border: 1px solid 
     else body = html`
       ${phase === 'slow' && html`<p class="text-xs" style=${{ color: tok.pend }}>Showing saved data. The data store hasn't confirmed it yet, so it may be out of date.</p>`}
       <div class="grid gap-3" style=${{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))' }}>
-        <${Kpi} label="Cells passing all gates" value=${passing + ' / ' + tested.length} sub=${'Gen ' + latest.gen + ' futures cells (MES, MNQ)'} tone=${passing ? tok.pass : tok.fail}/>
+        <${Kpi} label="Cells passing all gates" value=${passing + ' / ' + tested.length} sub=${'Gen ' + latest.gen + ' tested cells (futures + modeled SPX)'} tone=${passing ? tok.pass : tok.fail}/>
         <${Kpi} label="Best in-sample PF" value=${best ? f2(best.is.pf) : '—'} sub=${best ? best.agent + ' · ' + best.instrument + ' · ' + best.is.trades + ' trades' : ''}/>
         <${Kpi} label="OOS looks used" value=${touchUsed + ' / 8'} sub=${'2 per agent. ' + Object.keys(touches).filter(k => touches[k]).map(k => k + ' ' + touches[k] + '/2').join(', ')}/>
-        <${Kpi} label="Options cells pending" value=${pendingN} sub="SPX and SPY legs need the modeled pricing run" tone=${pendingN ? tok.pend : tok.ink}/>
+        <${Kpi} label="Options cells pending" value=${pendingN} sub="Option cells not yet run with modeled pricing" tone=${pendingN ? tok.pend : tok.ink}/>
       </div>
       <p class="text-sm" style=${{ maxWidth: '96ch' }}><span class="eyebrow">Gen ${latest.gen} summary</span> ${latest.summary}</p>
       <nav class="flex gap-4 border-b border-line overflow-x-auto" role="tablist" aria-label="Tracker sections">

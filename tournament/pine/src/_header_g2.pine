@@ -1,0 +1,4 @@
+//@version=6
+strategy("__TITLE__", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)
+// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,
+// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.

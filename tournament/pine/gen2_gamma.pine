@@ -1,0 +1,177 @@
+//@version=6
+strategy("TQ Gamma G2", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)
+// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,
+// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.
+riskPct = input.float(1.0, "Risk % equity per trade", minval=0.1, maxval=2.0)
+useChop = input.bool(true, "Chop filter: ADX<20 or range<0.35 dATR")
+useDead = input.bool(true, "Midday dead zone 12:00-13:30 ET")
+
+// ---------- time (America/New_York, bar OPEN time) ----------
+tz = "America/New_York"
+hhmm = hour(time, tz) * 100 + minute(time, tz)
+dInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)
+inRTH = hhmm >= 930 and hhmm < 1600
+rthStart = inRTH and not inRTH[1]
+
+// ---------- session state, built in-script (no request.security on HTF) ----------
+var float dH = na
+var float dL = na
+var float pdH = na
+var float pdL = na
+var float pdC = na
+var float lastRthC = na
+var float orH = na
+var float orL = na
+var float onH = na
+var float onL = na
+var float sPV = 0.0
+var float sV = 0.0
+var float dATR = na
+var float rthOpen = na
+var int nL = 0
+var int nS = 0
+if hhmm == 1800
+    onH := high
+    onL := low
+else if not inRTH and not na(onH)
+    onH := math.max(onH, high)
+    onL := math.min(onL, low)
+if rthStart
+    if not na(dH)
+        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))
+        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14
+        pdH := dH
+        pdL := dL
+        pdC := lastRthC
+    dH := high
+    dL := low
+    orH := high
+    orL := low
+    sPV := 0.0
+    sV := 0.0
+    rthOpen := open
+    nL := 0
+    nS := 0
+else if inRTH
+    dH := math.max(dH, high)
+    dL := math.min(dL, low)
+    if hhmm < 945
+        orH := math.max(orH, high)
+        orL := math.min(orL, low)
+if inRTH
+    sPV += hlc3 * volume
+    sV += volume
+    lastRthC := close
+vwap_ = sV > 0 ? sPV / sV : na
+orReady = inRTH and hhmm >= 945
+
+// ---------- shared indicators ----------
+// m101 (Gen 2): ATR from RTH bars only + stop floor of 0.25 x daily ATR
+atrStd = ta.atr(14)
+trR = ta.tr(true)
+var float atrR = na
+if inRTH
+    atrR := na(atrR) ? trR : (atrR * 13 + trR) / 14
+atr = nz(atrR, atrStd)
+stopFloor = nz(0.25 * dATR, 0.0)
+[diP, diM, adx] = ta.dmi(14, 14)
+rangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35
+chopOK = not useChop or (adx >= 20 and rangeOk)
+deadZ = useDead and hhmm >= 1200 and hhmm < 1330
+
+// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------
+var fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)
+isFomc = array.includes(fomc, dInt)
+fomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430
+
+// ---------- VIX (same timeframe, confirmed bars only) ----------
+vixC = request.security("CBOE:VIX", timeframe.period, close, lookahead=barmerge.lookahead_off)
+vixH = request.security("CBOE:VIX", timeframe.period, high, lookahead=barmerge.lookahead_off)
+var float vixLast = na
+var float vixPrev = na
+if rthStart
+    vixPrev := vixLast
+if inRTH
+    vixLast := vixC
+vixUp = not na(vixPrev) and vixC > vixPrev
+
+// ---------- sizing: fixed-fractional risk ----------
+f_qty(float dist) =>
+    float q = 0.0
+    if dist > 0
+        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))
+    q
+
+flat = strategy.position_size == 0
+barsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0
+var float stopPx = na
+var float tgtPx = na
+var float rPts = na
+var float entRef = na
+var bool trailOn = false
+
+// ================= AGENT GAMMA: Volatility compression -> expansion =================
+ema20 = ta.ema(close, 20)
+basis = ta.sma(close, 20)
+dev = 2.0 * ta.stdev(close, 20)
+bbU = basis + dev
+bbL = basis - dev
+[kcM, kcU, kcL] = ta.kc(close, 20, 1.5)
+sqzOn = bbU < kcU and bbL > kcL
+var int sqzCnt = 0
+sqzCnt := sqzOn ? sqzCnt + 1 : 0
+sqzBars = input.int(6, "Min squeeze bars", minval=2)
+release = not sqzOn and sqzOn[1] and sqzCnt[1] >= sqzBars
+M = ta.linreg(close - math.avg(math.avg(ta.highest(high, 20), ta.lowest(low, 20)), basis), 20, 0)
+atrSma = ta.sma(atr, 20)
+// m102 (Gen 2): expansion-without-squeeze short trigger removed
+
+winG = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ
+canEnter = flat and winG and chopOK and not fomcBlock
+
+longSig = canEnter and release and M > 0 and M > M[1] and close > ema20 and atr > atr[5] and nL == 0
+shortSig = canEnter and close < ema20 and nS == 0 and release and M < 0 and M < M[1]
+
+if longSig
+    st = math.max(kcL, close - 1.5 * atr)
+    st := math.min(st, close - math.max(0.5 * atr, stopFloor))
+    d = close - st
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        rPts := d
+        entRef := close
+        trailOn := false
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("XL", "L", stop=stopPx)
+        nL += 1
+if shortSig
+    st = math.min(kcU, close + 1.5 * atr)
+    st := math.max(st, close + math.max(0.5 * atr, stopFloor))
+    d = st - close
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        tgtPx := close - 2.5 * d
+        rPts := d
+        entRef := close
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+        nS += 1
+
+if strategy.position_size > 0
+    strategy.exit("XL", "L", stop=stopPx)
+    if high >= entRef + rPts
+        trailOn := true
+    if trailOn and M < M[1] and M[1] < M[2]
+        strategy.close("L", comment="mom fade")
+    else if close < ema20
+        strategy.close("L", comment="trail EMA20")
+if strategy.position_size < 0
+    strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+    if M > M[1] and M[1] > M[2]
+        strategy.close("S", comment="mom turn")
+
+// ---------- end-of-day flatten ----------
+if hhmm >= 1550 or not inRTH
+    strategy.close_all(comment="EOD")

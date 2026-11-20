@@ -1,0 +1,102 @@
+
+// ================= AGENT BETA: Liquidity sweep / failed acceptance reversal =================
+rsi = ta.rsi(close, 14)
+ph = ta.pivothigh(high, 5, 5)
+pl = ta.pivotlow(low, 5, 5)
+var float lastPH = na
+var float lastPHrsi = na
+var float lastPL = na
+var float lastPLrsi = na
+var float lastPLvix = na
+if not na(ph)
+    lastPH := ph
+    lastPHrsi := rsi[5]
+if not na(pl)
+    lastPL := pl
+    lastPLrsi := rsi[5]
+    lastPLvix := vixH[5]
+
+var bool usePDH = false
+var bool usePDL = false
+var bool useONH = false
+var bool useONL = false
+var bool useORH = false
+var bool useORL = false
+if rthStart
+    usePDH := false
+    usePDL := false
+    useONH := false
+    useONL := false
+    useORH := false
+    useORL := false
+
+winB = hhmm >= 945 and hhmm < 1430 and not deadZ
+f_swUp(float lv, bool used) => not used and not na(lv) and high > lv + syminfo.mintick and close < lv
+f_swDn(float lv, bool used) => not used and not na(lv) and low < lv - syminfo.mintick and close > lv
+sPDH = f_swUp(pdH, usePDH)
+sONH = f_swUp(onH, useONH)
+sORH = orReady and f_swUp(orH, useORH)
+sPDL = f_swDn(pdL, usePDL)
+sONL = f_swDn(onL, useONL)
+sORL = orReady and f_swDn(orL, useORL)
+bearSweep = inRTH and hhmm >= 945 and (sPDH or sONH or sORH)
+bullSweep = inRTH and hhmm >= 945 and (sPDL or sONL or sORL)
+if bearSweep
+    usePDH := usePDH or sPDH
+    useONH := useONH or sONH
+    useORH := useORH or sORH
+if bullSweep
+    usePDL := usePDL or sPDL
+    useONL := useONL or sONL
+    useORL := useORL or sORL
+
+bearDiv = not na(lastPH) and high > lastPH and rsi < lastPHrsi
+bullDivRsi = not na(lastPL) and low < lastPL and rsi > lastPLrsi
+bullDivVix = not na(lastPLvix) and vixH < lastPLvix
+knife = (not na(pdC) and not na(dATR) and rthOpen - pdC < -dATR) or close < vwap_ - 1.5 * atr
+
+// pending sweep -> confirmation on the NEXT bar close
+var bool pendBear = false
+var bool pendBull = false
+var float swHi = na
+var float swLo = na
+var float swMid = na
+confBear = pendBear and close < swMid
+confBull = pendBull and close > swMid
+pendBear := false
+pendBull := false
+if bearSweep and bearDiv
+    pendBear := true
+    swHi := high
+    swMid := hl2
+if bullSweep and (bullDivRsi or bullDivVix) and not knife
+    pendBull := true
+    swLo := low
+    swMid := hl2
+
+canEnter = flat and winB and chopOK and not fomcBlock
+shortSig = canEnter and confBear and nS == 0
+longSig = canEnter and confBull and nL == 0
+
+if shortSig
+    d = math.max(swHi + 0.25 * atr - close, stopFloor)
+    stopPx := close + d
+    q = f_qty(d)
+    if q >= 1
+        t1 = vwap_ < close - 0.25 * atr ? vwap_ : close - d
+        t2 = orL < close - d ? orL : close - 2.0 * d
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("S1", "S", qty_percent=50, stop=stopPx, limit=t1)
+        strategy.exit("S2", "S", stop=stopPx, limit=t2)
+        nS += 1
+if longSig
+    d = math.max(close - (swLo - 0.25 * atr), stopFloor)
+    stopPx := close - d
+    q = f_qty(d)
+    if q >= 1
+        t1 = vwap_ > close + 0.25 * atr ? vwap_ : close + d
+        t2 = orH > close + d ? orH : close + 2.0 * d
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("L1", "L", qty_percent=50, stop=stopPx, limit=t1)
+        strategy.exit("L2", "L", stop=stopPx, limit=t2)
+        nL += 1

@@ -335,6 +335,403 @@
     "MES_5m_PF": 1.054,
     "MNQ_1m_PF": 1.063
    }
+  },
+  {
+   "id": "gen_2",
+   "gen": 2,
+   "label": "Gen 2 - mutations m101-m104, $100k, delta-scaled SPX credit",
+   "date": "2026-11-20",
+   "status": "ALL_FAIL",
+   "config": {
+    "capital": 100000,
+    "riskPct": 1.0,
+    "marginPct": 10,
+    "commissionPerContractSide": 1.0,
+    "slippageTicks": 1,
+    "isWindow": "2022-01-03 to 2025-06-30",
+    "oosWindow": "2025-07-01 to 2026-11-19",
+    "spxIsWindow": "2025-11-24 to 2026-07-31 (VIX1D history starts 2025-11-24)",
+    "spxOosWindow": "2026-08-01 to 2026-11-19",
+    "filters": "chop ON (ablation: off), dead zone ON, FOMC block; SPX: no entries before 10:00, credit floor max(0.10W, 0.85|delta|W) net of slippage",
+    "mutations": [
+     "m101",
+     "m102",
+     "m103",
+     "m104"
+    ]
+   },
+   "results": [
+    {
+     "agent": "Alpha",
+     "instrument": "MES1!",
+     "timeframe": "5m",
+     "scriptId": "USER;dd41a45061b447b3ab5876ecd07cf2cd",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 567,
+      "pf": 0.863,
+      "netProfit": -25763.5,
+      "netPct": -25.76,
+      "winRate": 47.3,
+      "longWinRate": 50.6,
+      "longTrades": 314,
+      "longPF": 0.915,
+      "shortWinRate": 43.1,
+      "shortTrades": 253,
+      "shortPF": 0.777,
+      "maxDDPct": 38.9,
+      "sharpe": -0.217,
+      "avgBars": 17.64,
+      "avgMinutes": 88.2,
+      "commission": 10876
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Alpha",
+     "instrument": "MNQ1!",
+     "timeframe": "5m",
+     "scriptId": "USER;dd41a45061b447b3ab5876ecd07cf2cd",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 599,
+      "pf": 1.009,
+      "netProfit": 1896.5,
+      "netPct": 1.9,
+      "winRate": 47.4,
+      "longWinRate": 48.9,
+      "longTrades": 323,
+      "longPF": 1.001,
+      "shortWinRate": 45.7,
+      "shortTrades": 276,
+      "shortPF": 1.021,
+      "maxDDPct": 24.1,
+      "sharpe": -0.021,
+      "avgBars": 16.22,
+      "avgMinutes": 81.1,
+      "commission": 7474
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Beta",
+     "instrument": "MES1!",
+     "timeframe": "5m",
+     "scriptId": "USER;0b8e71f436c34da7a50b42c675249a03",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 645,
+      "pf": 0.908,
+      "netProfit": -13619.75,
+      "netPct": -13.62,
+      "winRate": 49.0,
+      "longWinRate": 49.7,
+      "longTrades": 433,
+      "longPF": 0.905,
+      "shortWinRate": 47.6,
+      "shortTrades": 212,
+      "shortPF": 0.914,
+      "maxDDPct": 26.0,
+      "sharpe": -0.171,
+      "avgBars": 24.91,
+      "avgMinutes": 124.5,
+      "commission": 7116
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Beta",
+     "instrument": "MES1!",
+     "timeframe": "5m",
+     "scriptId": "USER;0b8e71f436c34da7a50b42c675249a03",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 860,
+      "pf": 0.896,
+      "netProfit": -19583.25,
+      "netPct": -19.58,
+      "winRate": 49.2,
+      "longWinRate": 50.4,
+      "longTrades": 577,
+      "longPF": 0.94,
+      "shortWinRate": 46.6,
+      "shortTrades": 283,
+      "shortPF": 0.811,
+      "maxDDPct": 30.8,
+      "sharpe": -0.211,
+      "avgBars": 25.37,
+      "avgMinutes": 126.9,
+      "commission": 9312
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest",
+     "variant": "chop filter off (m103 ablation)"
+    },
+    {
+     "agent": "Beta",
+     "instrument": "MNQ1!",
+     "timeframe": "5m",
+     "scriptId": "USER;0b8e71f436c34da7a50b42c675249a03",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 879,
+      "pf": 1.044,
+      "netProfit": 8846,
+      "netPct": 8.85,
+      "winRate": 51.0,
+      "longWinRate": 52.7,
+      "longTrades": 592,
+      "longPF": 1.092,
+      "shortWinRate": 47.4,
+      "shortTrades": 287,
+      "shortPF": 0.953,
+      "maxDDPct": 14.8,
+      "sharpe": 0.027,
+      "avgBars": 23.54,
+      "avgMinutes": 117.7,
+      "commission": 6190
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest",
+     "variant": "chop filter off (m103 ablation)",
+     "note": "The chop-on MNQ run was refused by TradingView's 2-concurrent-run limit and not re-run (daily quota)."
+    },
+    {
+     "agent": "Gamma",
+     "instrument": "MES1!",
+     "timeframe": "5m",
+     "scriptId": "USER;5e08f45326fb45c4855ad8425e37eee7",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 100,
+      "pf": 0.777,
+      "netProfit": -7352.25,
+      "netPct": -7.35,
+      "winRate": 37.0,
+      "longWinRate": 42.4,
+      "longTrades": 33,
+      "longPF": 0.888,
+      "shortWinRate": 34.3,
+      "shortTrades": 67,
+      "shortPF": 0.711,
+      "maxDDPct": 10.6,
+      "sharpe": -0.357,
+      "avgBars": 9.3,
+      "avgMinutes": 46.5,
+      "commission": 2516
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Gamma",
+     "instrument": "MNQ1!",
+     "timeframe": "5m",
+     "scriptId": "USER;5e08f45326fb45c4855ad8425e37eee7",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 110,
+      "pf": 1.182,
+      "netProfit": 5632.5,
+      "netPct": 5.63,
+      "winRate": 36.4,
+      "longWinRate": 45.7,
+      "longTrades": 35,
+      "longPF": 1.717,
+      "shortWinRate": 32.0,
+      "shortTrades": 75,
+      "shortPF": 0.964,
+      "maxDDPct": 5.3,
+      "sharpe": -0.021,
+      "avgBars": 9.45,
+      "avgMinutes": 47.2,
+      "commission": 1620
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Delta",
+     "instrument": "MES1!",
+     "timeframe": "5m",
+     "scriptId": "USER;d0b2414640e746f5abc7e91c7ab01183",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 419,
+      "pf": 0.775,
+      "netProfit": -23737.25,
+      "netPct": -23.74,
+      "winRate": 34.6,
+      "longWinRate": 30.8,
+      "longTrades": 185,
+      "longPF": 0.765,
+      "shortWinRate": 37.6,
+      "shortTrades": 234,
+      "shortPF": 0.782,
+      "maxDDPct": 28.5,
+      "sharpe": -0.448,
+      "avgBars": 16.35,
+      "avgMinutes": 81.8,
+      "commission": 6596
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Delta",
+     "instrument": "MNQ1!",
+     "timeframe": "5m",
+     "scriptId": "USER;d0b2414640e746f5abc7e91c7ab01183",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 376,
+      "pf": 0.863,
+      "netProfit": -12634.5,
+      "netPct": -12.63,
+      "winRate": 35.4,
+      "longWinRate": 34.2,
+      "longTrades": 161,
+      "longPF": 1.067,
+      "shortWinRate": 36.3,
+      "shortTrades": 215,
+      "shortPF": 0.757,
+      "maxDDPct": 18.5,
+      "sharpe": -0.241,
+      "avgBars": 17.66,
+      "avgMinutes": 88.3,
+      "commission": 3652
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "OBSERVED",
+     "source": "TradingView Deep Backtest"
+    },
+    {
+     "agent": "Beta",
+     "instrument": "SPX 0DTE",
+     "timeframe": "5m",
+     "scriptId": "inline: pine/gen2_spx_spread_sim.pine",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 1,
+      "pf": 0.0,
+      "netProfit": -107.06,
+      "netPct": -0.11,
+      "winRate": 0.0,
+      "longWinRate": null,
+      "longTrades": 0,
+      "longPF": null,
+      "shortWinRate": 0.0,
+      "shortTrades": 1,
+      "shortPF": 0.0,
+      "maxDDPct": 0.11,
+      "sharpe": null,
+      "avgBars": 6.0,
+      "avgMinutes": 30.0,
+      "commission": 4
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "MODELED",
+     "source": "TradingView indicator (Black-Scholes, VIX1D + skew), stop variant B",
+     "diagnostics": {
+      "signals": 35,
+      "rejectedDeltaOrPin": 0,
+      "rejectedCreditFloor": 34,
+      "rejectedBudget": 0,
+      "exitPT": 0,
+      "exitStop": 1,
+      "exitSettle": 0
+     },
+     "note": "35 signals in 176 days; the delta-scaled credit floor (net of $0.10 slippage) rejected 34. One trade, stopped out."
+    },
+    {
+     "agent": "Delta",
+     "instrument": "SPX 0DTE",
+     "timeframe": "5m",
+     "scriptId": "inline: pine/gen2_spx_spread_sim.pine",
+     "scriptVersion": "2.0",
+     "is": {
+      "trades": 1,
+      "pf": null,
+      "netProfit": 48.37,
+      "netPct": 0.05,
+      "winRate": 100.0,
+      "longWinRate": null,
+      "longTrades": 0,
+      "longPF": null,
+      "shortWinRate": 100.0,
+      "shortTrades": 1,
+      "shortPF": null,
+      "maxDDPct": 0.0,
+      "sharpe": null,
+      "avgBars": 13.0,
+      "avgMinutes": 65.0,
+      "commission": 4
+     },
+     "oos": null,
+     "section1256Share": 1.0,
+     "pricing": "MODELED",
+     "source": "TradingView indicator (Black-Scholes, VIX1D + skew), stop variant B",
+     "diagnostics": {
+      "signals": 157,
+      "rejectedDeltaOrPin": 123,
+      "rejectedCreditFloor": 33,
+      "rejectedBudget": 0,
+      "exitPT": 1,
+      "exitStop": 0,
+      "exitSettle": 0
+     },
+     "note": "157 signals; 123 rejected because the structural strike limit pushed the short strike below 0.10 delta, 33 by the credit floor. One trade."
+    }
+   ],
+   "pending": [
+    {
+     "agent": "Alpha",
+     "instrument": "SPY",
+     "timeframe": "5m",
+     "status": "PENDING",
+     "pricing": "MODELED",
+     "reason": "Not run in Gen 2. SPY long options route only when the VIX 252-day rank < 30, and the momentum agents show no futures edge to route.",
+     "section1256Share": 0.0
+    },
+    {
+     "agent": "Gamma",
+     "instrument": "SPY",
+     "timeframe": "5m",
+     "status": "PENDING",
+     "pricing": "MODELED",
+     "reason": "Not run in Gen 2. SPY long options route only when the VIX 252-day rank < 30, and the momentum agents show no futures edge to route.",
+     "section1256Share": 0.0
+    }
+   ],
+   "oosTouches": {
+    "Alpha": 1,
+    "Beta": 0,
+    "Gamma": 0,
+    "Delta": 0
+   },
+   "trialsToDate": 19,
+   "summary": "0 of 9 futures cells and 0 of 2 SPX cells pass. Wider stops (m101) lifted win rates to 35-50% but profit factors barely moved, so friction was not the main problem: the signals have no edge. Best: Gamma on MNQ (PF 1.18, DD 5.3%) on only 110 trades. The SPX rules are over-constrained: 192 signals produced 2 trades."
   }
  ],
  "agents": [
@@ -436,8 +833,8 @@
    "date": "2026-11-20",
    "title": "Proposed: RTH-only ATR, stop floor 0.25 x daily ATR",
    "detail": "Compute ATR from RTH bars only and set stop = max(1.0 x ATR_RTH, 0.25 x dATR). Targets m002 and m003: fewer contracts per R, so less friction per R.",
-   "oosImpact": "pending",
-   "status": "proposed"
+   "oosImpact": "No OOS look (all cells failed IS). Win rate rose to 35-50% and hold time to 45-125 min; PF moved -0.04 to +0.16. Friction per R roughly halved, so friction is not what is killing these signals.",
+   "status": "applied"
   },
   {
    "id": "m102",
@@ -447,8 +844,8 @@
    "date": "2026-11-20",
    "title": "Proposed: drop the expansion-without-squeeze trigger",
    "detail": "Shorts need a real squeeze release, like longs. Asymmetry moves to exits only (2.5R target vs trailing).",
-   "oosImpact": "pending",
-   "status": "proposed"
+   "oosImpact": "No OOS look. Gamma shorts fell from 268 to 75 (MNQ) and 186 to 67 (MES); MNQ PF 1.02 to 1.18, MES PF 0.81 to 0.78. Trades fell below the 150 gate.",
+   "status": "applied"
   },
   {
    "id": "m103",
@@ -458,8 +855,8 @@
    "date": "2026-11-20",
    "title": "Proposed: chop-filter ablation for Beta",
    "detail": "Pre-registered ablation (spec section 2.1): run with ADX >= 20 off. Keep it off only if IS PF improves on both instruments.",
-   "oosImpact": "pending",
-   "status": "proposed"
+   "oosImpact": "No OOS look. MES: chop on 0.908 vs off 0.896, so the filter stays ON per the pre-registered rule. MNQ chop-on run missing (TradingView concurrency limit).",
+   "status": "applied"
   },
   {
    "id": "m104",
@@ -469,6 +866,94 @@
    "date": "2026-11-20",
    "title": "Proposed: shorts need 1h close below 1h EMA50",
    "detail": "A deeper bear-regime requirement for the short side only.",
+   "oosImpact": "No OOS look. Delta short PF 0.78 (MES) and 0.76 (MNQ), unchanged from Gen 1. The short side has no edge in this sample.",
+   "status": "failed"
+  },
+  {
+   "id": "m105",
+   "gen": 2,
+   "agent": "All",
+   "kind": "failure",
+   "date": "2026-11-20",
+   "title": "Friction hypothesis refuted",
+   "detail": "Gen 1 blamed MES friction (about 15% of R). m101 roughly halved friction per R, yet MES profit factors stayed at 0.78-0.91. The MNQ-over-MES gap persists, but the signals themselves show no edge on either instrument.",
+   "oosImpact": "n/a",
+   "status": "diagnosed"
+  },
+  {
+   "id": "m106",
+   "gen": 2,
+   "agent": "Beta",
+   "kind": "failure",
+   "date": "2026-11-20",
+   "title": "SPX credit floor rejects 34 of 35 Beta signals",
+   "detail": "Measured net of $0.10 slippage, a 5-wide 0.10-0.15 delta spread lands just under 0.85 x |delta| x width, and wider wings fail by more because credit/width falls with width. Beta also produces only 35 SPX signals in 176 days (SPX has no overnight session, so there are no overnight levels to sweep).",
+   "oosImpact": "OOS not touched",
+   "status": "diagnosed"
+  },
+  {
+   "id": "m107",
+   "gen": 2,
+   "agent": "Delta",
+   "kind": "failure",
+   "date": "2026-11-20",
+   "title": "SPX strike constraints leave Delta 1 trade from 157 signals",
+   "detail": "Requiring the short strike beyond the pullback low, beyond the 1h EMA50 and at least 1.25x the remaining expected move away pushes it below 0.10 delta in 123 of 157 cases. The credit floor removes 33 more.",
+   "oosImpact": "OOS not touched",
+   "status": "diagnosed"
+  },
+  {
+   "id": "m108",
+   "gen": 2,
+   "agent": "Gamma",
+   "kind": "note",
+   "date": "2026-11-20",
+   "title": "Gamma MNQ is the best cell so far, but the sample is thin",
+   "detail": "PF 1.18, DD 5.3%, 110 trades. Longs PF 1.72 on 35 trades; shorts PF 0.96 on 75. The long result needs a null test before anyone trusts it: in a market that rose 40% over the window, random long entries also make money.",
+   "oosImpact": "OOS not touched",
+   "status": "note"
+  },
+  {
+   "id": "m201",
+   "gen": 3,
+   "agent": "All",
+   "kind": "mutation",
+   "date": "2026-11-20",
+   "title": "Proposed: one SPX relaxation (needs your approval)",
+   "detail": "Test the credit floor at the mid (slippage still charged in P&L) and widen the short-strike band to 0.07-0.20 delta. Pre-register only this one change so the SPX leg can produce a sample.",
+   "oosImpact": "pending",
+   "status": "proposed"
+  },
+  {
+   "id": "m202",
+   "gen": 3,
+   "agent": "Alpha",
+   "kind": "mutation",
+   "date": "2026-11-20",
+   "title": "Proposed: retire Alpha",
+   "detail": "Two generations, four cells, no in-sample PF above 1.05, one OOS look already spent (0.78 / 0.96). Further mutation would be curve-fitting.",
+   "oosImpact": "pending",
+   "status": "proposed"
+  },
+  {
+   "id": "m203",
+   "gen": 3,
+   "agent": "Delta",
+   "kind": "mutation",
+   "date": "2026-11-20",
+   "title": "Proposed: Delta as signal source only",
+   "detail": "Delta's short side failed twice, so as a futures agent it can never pass the bidirectional gate. Keep its 1h/15m regime only as the bull-put filter for the SPX leg.",
+   "oosImpact": "pending",
+   "status": "proposed"
+  },
+  {
+   "id": "m204",
+   "gen": 3,
+   "agent": "Gamma",
+   "kind": "mutation",
+   "date": "2026-11-20",
+   "title": "Proposed: random-entry null test before any mutation",
+   "detail": "Compare Gamma MNQ and Beta MNQ longs against random long entries at the same times of day, with the same exits. If they don't beat the null at p < 0.05, the long PF is just market drift.",
    "oosImpact": "pending",
    "status": "proposed"
   }
@@ -476,7 +961,7 @@
  "deploy": {
   "id": "current",
   "champion": null,
-  "championNote": "No agent passed the Quant Auditor in Gen 1, so there is no Champion Ensemble to deploy. The scripts below are Gen 1 research candidates. Do not trade them.",
+  "championNote": "No agent has passed the Quant Auditor after two generations, so there is no Champion Ensemble to deploy. The scripts below are Gen 2 research candidates. Do not trade them.",
   "spxRules": [
    [
     "Short strike delta",
@@ -488,7 +973,7 @@
    ],
    [
     "Minimum credit",
-    "max(10% of width, 0.85 x |delta| x width), net of modeled slippage (pending your approval)"
+    "max(10% of width, 0.85 x |delta| x width), net of $0.10 slippage (approved Gen 2). Combined with the strike rules it admits about 1% of signals; see m106/m107."
    ],
    [
     "Strike distance",
@@ -555,10 +1040,12 @@
   ],
   "execution": "Manual. The agent-accessible Robinhood account is a cash account with no options level, and the connector cannot trade futures. Use TradingView alerts plus manual entry on the Level 3 margin account.",
   "pine": {
-   "alpha": "//@version=6\nstrategy(\"TQ Alpha G1\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=50000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 1 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\natr = ta.atr(14)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT ALPHA: Opening-range / VWAP / DMI momentum =================\nema9 = ta.ema(close, 9)\nvolSma = ta.sma(volume, 20)\nvar bool upUsed = false\nvar bool dnUsed = false\nif rthStart\n    upUsed := false\n    dnUsed := false\nupBreak = orReady and not upUsed and close > orH\ndnBreak = orReady and not dnUsed and close < orL\nif upBreak\n    upUsed := true\nif dnBreak\n    dnUsed := true\n\nwinA = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1500)) and not deadZ\ncanEnter = flat and winA and chopOK and not fomcBlock\n\nlongSig = canEnter and upBreak and close > vwap_ and adx >= 20 and diP > diM and volume > volSma and nL == 0\n// Short is NOT a mirror: requires VIX up on the day, no volume requirement, fixed 2R target + time stop\nshortSig = canEnter and dnBreak and close < vwap_ and adx >= 20 and diM > diP and vixUp and nS == 0\n\nif longSig\n    q = f_qty(atr)\n    if q >= 1\n        stopPx := close - atr\n        rPts := atr\n        entRef := close\n        trailOn := false\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    q = f_qty(atr)\n    if q >= 1\n        stopPx := close + atr\n        tgtPx := close - 2.0 * atr\n        rPts := atr\n        entRef := close\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if high >= entRef + rPts\n        trailOn := true\n    if trailOn and close < ema9\n        strategy.close(\"L\", comment=\"trail EMA9\")\nif strategy.position_size < 0\n    strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n    if barsIn >= 6 and close > entRef - 0.5 * rPts\n        strategy.close(\"S\", comment=\"time stop\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
-   "beta": "//@version=6\nstrategy(\"TQ Beta G1\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=50000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 1 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\natr = ta.atr(14)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT BETA: Liquidity sweep / failed acceptance reversal =================\nrsi = ta.rsi(close, 14)\nph = ta.pivothigh(high, 5, 5)\npl = ta.pivotlow(low, 5, 5)\nvar float lastPH = na\nvar float lastPHrsi = na\nvar float lastPL = na\nvar float lastPLrsi = na\nvar float lastPLvix = na\nif not na(ph)\n    lastPH := ph\n    lastPHrsi := rsi[5]\nif not na(pl)\n    lastPL := pl\n    lastPLrsi := rsi[5]\n    lastPLvix := vixH[5]\n\nvar bool usePDH = false\nvar bool usePDL = false\nvar bool useONH = false\nvar bool useONL = false\nvar bool useORH = false\nvar bool useORL = false\nif rthStart\n    usePDH := false\n    usePDL := false\n    useONH := false\n    useONL := false\n    useORH := false\n    useORL := false\n\nwinB = hhmm >= 945 and hhmm < 1430 and not deadZ\nf_swUp(float lv, bool used) => not used and not na(lv) and high > lv + syminfo.mintick and close < lv\nf_swDn(float lv, bool used) => not used and not na(lv) and low < lv - syminfo.mintick and close > lv\nsPDH = f_swUp(pdH, usePDH)\nsONH = f_swUp(onH, useONH)\nsORH = orReady and f_swUp(orH, useORH)\nsPDL = f_swDn(pdL, usePDL)\nsONL = f_swDn(onL, useONL)\nsORL = orReady and f_swDn(orL, useORL)\nbearSweep = inRTH and hhmm >= 945 and (sPDH or sONH or sORH)\nbullSweep = inRTH and hhmm >= 945 and (sPDL or sONL or sORL)\nif bearSweep\n    usePDH := usePDH or sPDH\n    useONH := useONH or sONH\n    useORH := useORH or sORH\nif bullSweep\n    usePDL := usePDL or sPDL\n    useONL := useONL or sONL\n    useORL := useORL or sORL\n\nbearDiv = not na(lastPH) and high > lastPH and rsi < lastPHrsi\nbullDivRsi = not na(lastPL) and low < lastPL and rsi > lastPLrsi\nbullDivVix = not na(lastPLvix) and vixH < lastPLvix\nknife = (not na(pdC) and not na(dATR) and rthOpen - pdC < -dATR) or close < vwap_ - 1.5 * atr\n\n// pending sweep -> confirmation on the NEXT bar close\nvar bool pendBear = false\nvar bool pendBull = false\nvar float swHi = na\nvar float swLo = na\nvar float swMid = na\nconfBear = pendBear and close < swMid\nconfBull = pendBull and close > swMid\npendBear := false\npendBull := false\nif bearSweep and bearDiv\n    pendBear := true\n    swHi := high\n    swMid := hl2\nif bullSweep and (bullDivRsi or bullDivVix) and not knife\n    pendBull := true\n    swLo := low\n    swMid := hl2\n\ncanEnter = flat and winB and chopOK and not fomcBlock\nshortSig = canEnter and confBear and nS == 0\nlongSig = canEnter and confBull and nL == 0\n\nif shortSig\n    stopPx := swHi + 0.25 * atr\n    d = stopPx - close\n    q = f_qty(d)\n    if q >= 1\n        t1 = vwap_ < close - 0.25 * atr ? vwap_ : close - d\n        t2 = orL < close - d ? orL : close - 2.0 * d\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=t1)\n        strategy.exit(\"S2\", \"S\", stop=stopPx, limit=t2)\n        nS += 1\nif longSig\n    stopPx := swLo - 0.25 * atr\n    d = close - stopPx\n    q = f_qty(d)\n    if q >= 1\n        t1 = vwap_ > close + 0.25 * atr ? vwap_ : close + d\n        t2 = orH > close + d ? orH : close + 2.0 * d\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"L1\", \"L\", qty_percent=50, stop=stopPx, limit=t1)\n        strategy.exit(\"L2\", \"L\", stop=stopPx, limit=t2)\n        nL += 1\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
-   "gamma": "//@version=6\nstrategy(\"TQ Gamma G1\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=50000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 1 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\natr = ta.atr(14)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT GAMMA: Volatility compression -> expansion =================\nema20 = ta.ema(close, 20)\nbasis = ta.sma(close, 20)\ndev = 2.0 * ta.stdev(close, 20)\nbbU = basis + dev\nbbL = basis - dev\n[kcM, kcU, kcL] = ta.kc(close, 20, 1.5)\nsqzOn = bbU < kcU and bbL > kcL\nvar int sqzCnt = 0\nsqzCnt := sqzOn ? sqzCnt + 1 : 0\nsqzBars = input.int(6, \"Min squeeze bars\", minval=2)\nrelease = not sqzOn and sqzOn[1] and sqzCnt[1] >= sqzBars\nM = ta.linreg(close - math.avg(math.avg(ta.highest(high, 20), ta.lowest(low, 20)), basis), 20, 0)\natrSma = ta.sma(atr, 20)\n// short-only extra trigger: expansion without squeeze (crash legs)\nexpDown = atr > 1.5 * atrSma and close < dL[1] and inRTH and not rthStart\n\nwinG = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ\ncanEnter = flat and winG and chopOK and not fomcBlock\n\nlongSig = canEnter and release and M > 0 and M > M[1] and close > ema20 and atr > atr[5] and nL == 0\nshortSig = canEnter and close < ema20 and nS == 0 and ((release and M < 0 and M < M[1]) or expDown)\n\nif longSig\n    st = math.max(kcL, close - 1.5 * atr)\n    st := math.min(st, close - 0.5 * atr)\n    d = close - st\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        rPts := d\n        entRef := close\n        trailOn := false\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    st = math.min(kcU, close + 1.5 * atr)\n    st := math.max(st, close + 0.5 * atr)\n    d = st - close\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        tgtPx := close - 2.5 * d\n        rPts := d\n        entRef := close\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if high >= entRef + rPts\n        trailOn := true\n    if trailOn and M < M[1] and M[1] < M[2]\n        strategy.close(\"L\", comment=\"mom fade\")\n    else if close < ema20\n        strategy.close(\"L\", comment=\"trail EMA20\")\nif strategy.position_size < 0\n    strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n    if M > M[1] and M[1] > M[2]\n        strategy.close(\"S\", comment=\"mom turn\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
-   "delta": "//@version=6\nstrategy(\"TQ Delta G1\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=50000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 1 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\natr = ta.atr(14)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT DELTA: Multi-timeframe regime pullback =================\nema9 = ta.ema(close, 9)\nema20 = ta.ema(close, 20)\nema50 = ta.ema(close, 50)\n// HTF EMAs from CONFIRMED HTF closes, built in-script (identical historical vs realtime)\nvar float h1C = na\nvar float h1E20 = na\nvar float h1E50 = na\nvar float m15E9 = na\nvar float m15E21 = na\nvar int bearCnt15 = 0\nif timeframe.change(\"60\")\n    c = close[1]\n    h1C := c\n    h1E20 := na(h1E20) ? c : h1E20 + 2.0 / 21.0 * (c - h1E20)\n    h1E50 := na(h1E50) ? c : h1E50 + 2.0 / 51.0 * (c - h1E50)\nif timeframe.change(\"15\")\n    c = close[1]\n    m15E9 := na(m15E9) ? c : m15E9 + 2.0 / 10.0 * (c - m15E9)\n    m15E21 := na(m15E21) ? c : m15E21 + 2.0 / 22.0 * (c - m15E21)\n    bearCnt15 := m15E9 < m15E21 ? bearCnt15 + 1 : 0\nadd = request.security(\"USI:ADD\", timeframe.period, close, lookahead=barmerge.lookahead_off)\naddUp = add > 0 and add > add[3]\naddDn = add < 0 and add < add[3]\n\nbiasLong = h1E20 > h1E50 and h1C > h1E20 and m15E9 > m15E21\nbiasShort = h1E20 < h1E50 and h1C < h1E20 and bearCnt15 >= 2\n\npbL = low <= ema20 and close > ema50\npbS = high >= ema20 and close < ema50\ntrigL = pbL[1] and close > high[1]\ntrigS = pbS[1] and close < low[1]\n\nwinD = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ\ncanEnter = flat and winD and chopOK and not fomcBlock\nlongSig = canEnter and biasLong and addUp and trigL and nL < 2\nshortSig = canEnter and biasShort and addDn and trigS and nS < 2\n\nif longSig\n    st = math.min(low, low[1]) - 0.25 * atr\n    d = close - st\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        rPts := d\n        entRef := close\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    st = math.max(high, high[1]) + 0.25 * atr\n    d = st - close\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        tgtPx := close - 1.5 * d\n        rPts := d\n        entRef := close\n        trailOn := false\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=tgtPx)\n        strategy.exit(\"S2\", \"S\", stop=stopPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if close < ema20 and barsIn >= 1\n        strategy.close(\"L\", comment=\"trail EMA20\")\nif strategy.position_size < 0\n    strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=tgtPx)\n    strategy.exit(\"S2\", \"S\", stop=stopPx)\n    if low <= tgtPx\n        trailOn := true\n    if trailOn and close > ema9\n        strategy.close(\"S\", comment=\"trail EMA9\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n"
-  }
+   "alpha": "//@version=6\nstrategy(\"TQ Alpha G2\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\n// m101 (Gen 2): ATR from RTH bars only + stop floor of 0.25 x daily ATR\natrStd = ta.atr(14)\ntrR = ta.tr(true)\nvar float atrR = na\nif inRTH\n    atrR := na(atrR) ? trR : (atrR * 13 + trR) / 14\natr = nz(atrR, atrStd)\nstopFloor = nz(0.25 * dATR, 0.0)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT ALPHA: Opening-range / VWAP / DMI momentum =================\nema9 = ta.ema(close, 9)\nvolSma = ta.sma(volume, 20)\nvar bool upUsed = false\nvar bool dnUsed = false\nif rthStart\n    upUsed := false\n    dnUsed := false\nupBreak = orReady and not upUsed and close > orH\ndnBreak = orReady and not dnUsed and close < orL\nif upBreak\n    upUsed := true\nif dnBreak\n    dnUsed := true\n\nwinA = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1500)) and not deadZ\ncanEnter = flat and winA and chopOK and not fomcBlock\n\nlongSig = canEnter and upBreak and close > vwap_ and adx >= 20 and diP > diM and volume > volSma and nL == 0\n// Short is NOT a mirror: requires VIX up on the day, no volume requirement, fixed 2R target + time stop\nshortSig = canEnter and dnBreak and close < vwap_ and adx >= 20 and diM > diP and vixUp and nS == 0\n\nif longSig\n    d = math.max(atr, stopFloor)\n    q = f_qty(d)\n    if q >= 1\n        stopPx := close - d\n        rPts := d\n        entRef := close\n        trailOn := false\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    d = math.max(atr, stopFloor)\n    q = f_qty(d)\n    if q >= 1\n        stopPx := close + d\n        tgtPx := close - 2.0 * d\n        rPts := d\n        entRef := close\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if high >= entRef + rPts\n        trailOn := true\n    if trailOn and close < ema9\n        strategy.close(\"L\", comment=\"trail EMA9\")\nif strategy.position_size < 0\n    strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n    if barsIn >= 6 and close > entRef - 0.5 * rPts\n        strategy.close(\"S\", comment=\"time stop\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
+   "beta": "//@version=6\nstrategy(\"TQ Beta G2\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\n// m101 (Gen 2): ATR from RTH bars only + stop floor of 0.25 x daily ATR\natrStd = ta.atr(14)\ntrR = ta.tr(true)\nvar float atrR = na\nif inRTH\n    atrR := na(atrR) ? trR : (atrR * 13 + trR) / 14\natr = nz(atrR, atrStd)\nstopFloor = nz(0.25 * dATR, 0.0)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT BETA: Liquidity sweep / failed acceptance reversal =================\nrsi = ta.rsi(close, 14)\nph = ta.pivothigh(high, 5, 5)\npl = ta.pivotlow(low, 5, 5)\nvar float lastPH = na\nvar float lastPHrsi = na\nvar float lastPL = na\nvar float lastPLrsi = na\nvar float lastPLvix = na\nif not na(ph)\n    lastPH := ph\n    lastPHrsi := rsi[5]\nif not na(pl)\n    lastPL := pl\n    lastPLrsi := rsi[5]\n    lastPLvix := vixH[5]\n\nvar bool usePDH = false\nvar bool usePDL = false\nvar bool useONH = false\nvar bool useONL = false\nvar bool useORH = false\nvar bool useORL = false\nif rthStart\n    usePDH := false\n    usePDL := false\n    useONH := false\n    useONL := false\n    useORH := false\n    useORL := false\n\nwinB = hhmm >= 945 and hhmm < 1430 and not deadZ\nf_swUp(float lv, bool used) => not used and not na(lv) and high > lv + syminfo.mintick and close < lv\nf_swDn(float lv, bool used) => not used and not na(lv) and low < lv - syminfo.mintick and close > lv\nsPDH = f_swUp(pdH, usePDH)\nsONH = f_swUp(onH, useONH)\nsORH = orReady and f_swUp(orH, useORH)\nsPDL = f_swDn(pdL, usePDL)\nsONL = f_swDn(onL, useONL)\nsORL = orReady and f_swDn(orL, useORL)\nbearSweep = inRTH and hhmm >= 945 and (sPDH or sONH or sORH)\nbullSweep = inRTH and hhmm >= 945 and (sPDL or sONL or sORL)\nif bearSweep\n    usePDH := usePDH or sPDH\n    useONH := useONH or sONH\n    useORH := useORH or sORH\nif bullSweep\n    usePDL := usePDL or sPDL\n    useONL := useONL or sONL\n    useORL := useORL or sORL\n\nbearDiv = not na(lastPH) and high > lastPH and rsi < lastPHrsi\nbullDivRsi = not na(lastPL) and low < lastPL and rsi > lastPLrsi\nbullDivVix = not na(lastPLvix) and vixH < lastPLvix\nknife = (not na(pdC) and not na(dATR) and rthOpen - pdC < -dATR) or close < vwap_ - 1.5 * atr\n\n// pending sweep -> confirmation on the NEXT bar close\nvar bool pendBear = false\nvar bool pendBull = false\nvar float swHi = na\nvar float swLo = na\nvar float swMid = na\nconfBear = pendBear and close < swMid\nconfBull = pendBull and close > swMid\npendBear := false\npendBull := false\nif bearSweep and bearDiv\n    pendBear := true\n    swHi := high\n    swMid := hl2\nif bullSweep and (bullDivRsi or bullDivVix) and not knife\n    pendBull := true\n    swLo := low\n    swMid := hl2\n\ncanEnter = flat and winB and chopOK and not fomcBlock\nshortSig = canEnter and confBear and nS == 0\nlongSig = canEnter and confBull and nL == 0\n\nif shortSig\n    d = math.max(swHi + 0.25 * atr - close, stopFloor)\n    stopPx := close + d\n    q = f_qty(d)\n    if q >= 1\n        t1 = vwap_ < close - 0.25 * atr ? vwap_ : close - d\n        t2 = orL < close - d ? orL : close - 2.0 * d\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=t1)\n        strategy.exit(\"S2\", \"S\", stop=stopPx, limit=t2)\n        nS += 1\nif longSig\n    d = math.max(close - (swLo - 0.25 * atr), stopFloor)\n    stopPx := close - d\n    q = f_qty(d)\n    if q >= 1\n        t1 = vwap_ > close + 0.25 * atr ? vwap_ : close + d\n        t2 = orH > close + d ? orH : close + 2.0 * d\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"L1\", \"L\", qty_percent=50, stop=stopPx, limit=t1)\n        strategy.exit(\"L2\", \"L\", stop=stopPx, limit=t2)\n        nL += 1\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
+   "gamma": "//@version=6\nstrategy(\"TQ Gamma G2\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\n// m101 (Gen 2): ATR from RTH bars only + stop floor of 0.25 x daily ATR\natrStd = ta.atr(14)\ntrR = ta.tr(true)\nvar float atrR = na\nif inRTH\n    atrR := na(atrR) ? trR : (atrR * 13 + trR) / 14\natr = nz(atrR, atrStd)\nstopFloor = nz(0.25 * dATR, 0.0)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT GAMMA: Volatility compression -> expansion =================\nema20 = ta.ema(close, 20)\nbasis = ta.sma(close, 20)\ndev = 2.0 * ta.stdev(close, 20)\nbbU = basis + dev\nbbL = basis - dev\n[kcM, kcU, kcL] = ta.kc(close, 20, 1.5)\nsqzOn = bbU < kcU and bbL > kcL\nvar int sqzCnt = 0\nsqzCnt := sqzOn ? sqzCnt + 1 : 0\nsqzBars = input.int(6, \"Min squeeze bars\", minval=2)\nrelease = not sqzOn and sqzOn[1] and sqzCnt[1] >= sqzBars\nM = ta.linreg(close - math.avg(math.avg(ta.highest(high, 20), ta.lowest(low, 20)), basis), 20, 0)\natrSma = ta.sma(atr, 20)\n// m102 (Gen 2): expansion-without-squeeze short trigger removed\n\nwinG = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ\ncanEnter = flat and winG and chopOK and not fomcBlock\n\nlongSig = canEnter and release and M > 0 and M > M[1] and close > ema20 and atr > atr[5] and nL == 0\nshortSig = canEnter and close < ema20 and nS == 0 and release and M < 0 and M < M[1]\n\nif longSig\n    st = math.max(kcL, close - 1.5 * atr)\n    st := math.min(st, close - math.max(0.5 * atr, stopFloor))\n    d = close - st\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        rPts := d\n        entRef := close\n        trailOn := false\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    st = math.min(kcU, close + 1.5 * atr)\n    st := math.max(st, close + math.max(0.5 * atr, stopFloor))\n    d = st - close\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        tgtPx := close - 2.5 * d\n        rPts := d\n        entRef := close\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if high >= entRef + rPts\n        trailOn := true\n    if trailOn and M < M[1] and M[1] < M[2]\n        strategy.close(\"L\", comment=\"mom fade\")\n    else if close < ema20\n        strategy.close(\"L\", comment=\"trail EMA20\")\nif strategy.position_size < 0\n    strategy.exit(\"XS\", \"S\", stop=stopPx, limit=tgtPx)\n    if M > M[1] and M[1] > M[2]\n        strategy.close(\"S\", comment=\"mom turn\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
+   "delta": "//@version=6\nstrategy(\"TQ Delta G2\", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)\n// Quant Tournament - Generation 2 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,\n// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.\nriskPct = input.float(1.0, \"Risk % equity per trade\", minval=0.1, maxval=2.0)\nuseChop = input.bool(true, \"Chop filter: ADX<20 or range<0.35 dATR\")\nuseDead = input.bool(true, \"Midday dead zone 12:00-13:30 ET\")\n\n// ---------- time (America/New_York, bar OPEN time) ----------\ntz = \"America/New_York\"\nhhmm = hour(time, tz) * 100 + minute(time, tz)\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and not inRTH[1]\n\n// ---------- session state, built in-script (no request.security on HTF) ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float onH = na\nvar float onL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nvar int nL = 0\nvar int nS = 0\nif hhmm == 1800\n    onH := high\n    onL := low\nelse if not inRTH and not na(onH)\n    onH := math.max(onH, high)\n    onL := math.min(onL, low)\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\n    nL := 0\n    nS := 0\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\n\n// ---------- shared indicators ----------\n// m101 (Gen 2): ATR from RTH bars only + stop floor of 0.25 x daily ATR\natrStd = ta.atr(14)\ntrR = ta.tr(true)\nvar float atrR = na\nif inRTH\n    atrR := na(atrR) ? trR : (atrR * 13 + trR) / 14\natr = nz(atrR, atrStd)\nstopFloor = nz(0.25 * dATR, 0.0)\n[diP, diM, adx] = ta.dmi(14, 14)\nrangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35\nchopOK = not useChop or (adx >= 20 and rangeOk)\ndeadZ = useDead and hhmm >= 1200 and hhmm < 1330\n\n// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------\nvar fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\nfomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430\n\n// ---------- VIX (same timeframe, confirmed bars only) ----------\nvixC = request.security(\"CBOE:VIX\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nvar float vixLast = na\nvar float vixPrev = na\nif rthStart\n    vixPrev := vixLast\nif inRTH\n    vixLast := vixC\nvixUp = not na(vixPrev) and vixC > vixPrev\n\n// ---------- sizing: fixed-fractional risk ----------\nf_qty(float dist) =>\n    float q = 0.0\n    if dist > 0\n        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))\n    q\n\nflat = strategy.position_size == 0\nbarsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0\nvar float stopPx = na\nvar float tgtPx = na\nvar float rPts = na\nvar float entRef = na\nvar bool trailOn = false\n\n// ================= AGENT DELTA: Multi-timeframe regime pullback =================\nema9 = ta.ema(close, 9)\nema20 = ta.ema(close, 20)\nema50 = ta.ema(close, 50)\n// HTF EMAs from CONFIRMED HTF closes, built in-script (identical historical vs realtime)\nvar float h1C = na\nvar float h1E20 = na\nvar float h1E50 = na\nvar float m15E9 = na\nvar float m15E21 = na\nvar int bearCnt15 = 0\nif timeframe.change(\"60\")\n    c = close[1]\n    h1C := c\n    h1E20 := na(h1E20) ? c : h1E20 + 2.0 / 21.0 * (c - h1E20)\n    h1E50 := na(h1E50) ? c : h1E50 + 2.0 / 51.0 * (c - h1E50)\nif timeframe.change(\"15\")\n    c = close[1]\n    m15E9 := na(m15E9) ? c : m15E9 + 2.0 / 10.0 * (c - m15E9)\n    m15E21 := na(m15E21) ? c : m15E21 + 2.0 / 22.0 * (c - m15E21)\n    bearCnt15 := m15E9 < m15E21 ? bearCnt15 + 1 : 0\nadd = request.security(\"USI:ADD\", timeframe.period, close, lookahead=barmerge.lookahead_off)\naddUp = add > 0 and add > add[3]\naddDn = add < 0 and add < add[3]\n\nbiasLong = h1E20 > h1E50 and h1C > h1E20 and m15E9 > m15E21\n// m104 (Gen 2): shorts also need the 1h close below the 1h EMA50\nbiasShort = h1E20 < h1E50 and h1C < h1E20 and h1C < h1E50 and bearCnt15 >= 2\n\npbL = low <= ema20 and close > ema50\npbS = high >= ema20 and close < ema50\ntrigL = pbL[1] and close > high[1]\ntrigS = pbS[1] and close < low[1]\n\nwinD = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ\ncanEnter = flat and winD and chopOK and not fomcBlock\nlongSig = canEnter and biasLong and addUp and trigL and nL < 2\nshortSig = canEnter and biasShort and addDn and trigS and nS < 2\n\nif longSig\n    d = math.max(close - (math.min(low, low[1]) - 0.25 * atr), stopFloor)\n    st = close - d\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        rPts := d\n        entRef := close\n        strategy.entry(\"L\", strategy.long, qty=q)\n        strategy.exit(\"XL\", \"L\", stop=stopPx)\n        nL += 1\nif shortSig\n    d = math.max(math.max(high, high[1]) + 0.25 * atr - close, stopFloor)\n    st = close + d\n    q = f_qty(d)\n    if q >= 1\n        stopPx := st\n        tgtPx := close - 1.5 * d\n        rPts := d\n        entRef := close\n        trailOn := false\n        strategy.entry(\"S\", strategy.short, qty=q)\n        strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=tgtPx)\n        strategy.exit(\"S2\", \"S\", stop=stopPx)\n        nS += 1\n\nif strategy.position_size > 0\n    strategy.exit(\"XL\", \"L\", stop=stopPx)\n    if close < ema20 and barsIn >= 1\n        strategy.close(\"L\", comment=\"trail EMA20\")\nif strategy.position_size < 0\n    strategy.exit(\"S1\", \"S\", qty_percent=50, stop=stopPx, limit=tgtPx)\n    strategy.exit(\"S2\", \"S\", stop=stopPx)\n    if low <= tgtPx\n        trailOn := true\n    if trailOn and close > ema9\n        strategy.close(\"S\", comment=\"trail EMA9\")\n\n// ---------- end-of-day flatten ----------\nif hhmm >= 1550 or not inRTH\n    strategy.close_all(comment=\"EOD\")\n",
+   "spx_spread_sim": "//@version=6\nindicator(\"TQ SPX 0DTE Spread Sim G2\", overlay=false, max_bars_back=500)\n// Quant Tournament Gen 2 - SPX (SPXW) 0DTE vertical credit spread simulator. MODELED pricing:\n// Black-Scholes, IV = VIX1D with a linear skew in moneyness. Signals = Beta (sweep) or Delta (MTF pullback).\n// Bar-close signals, spread priced at that close plus slippage. No lookahead. OOS stats hidden unless revealed.\nagent = input.string(\"Beta\", \"Agent\", options=[\"Beta\", \"Delta\"])\nstopMode = input.string(\"B\", \"Stop variant\", options=[\"A\", \"B\"])\nshowOOS = input.bool(false, \"Reveal OOS stats (pre-registered: off)\")\ncapital = input.float(100000, \"Starting equity\")\nputSkew = input.float(0.25, \"Put IV multiplier per 1% OTM\")\ncallSkew = input.float(0.05, \"Call IV reduction per 1% OTM\")\nslipSpread = input.float(0.10, \"Slippage per spread per fill (premium $)\")\nfeeLeg = input.float(1.0, \"Fee per contract per leg per side ($)\")\noosStart = timestamp(\"America/New_York\", 2026, 8, 1, 0, 0)\n\ntz = \"America/New_York\"\nhh = hour(time, tz)\nmi = minute(time, tz)\nhhmm = hh * 100 + mi\ndInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)\ninRTH = hhmm >= 930 and hhmm < 1600\nrthStart = inRTH and (dInt != nz(dInt[1]) or not inRTH[1])\ntmin = 960 - (hh * 60 + mi + 5)\nTyr = math.max(tmin, 0) / 390.0 / 252.0\n\n// ---------- session state ----------\nvar float dH = na\nvar float dL = na\nvar float pdH = na\nvar float pdL = na\nvar float pdC = na\nvar float lastRthC = na\nvar float orH = na\nvar float orL = na\nvar float sPV = 0.0\nvar float sV = 0.0\nvar float dATR = na\nvar float rthOpen = na\nif rthStart\n    if not na(dH)\n        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))\n        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14\n        pdH := dH\n        pdL := dL\n        pdC := lastRthC\n    dH := high\n    dL := low\n    orH := high\n    orL := low\n    sPV := 0.0\n    sV := 0.0\n    rthOpen := open\nelse if inRTH\n    dH := math.max(dH, high)\n    dL := math.min(dL, low)\n    if hhmm < 945\n        orH := math.max(orH, high)\n        orL := math.min(orL, low)\nif inRTH\n    sPV += hlc3 * volume\n    sV += volume\n    lastRthC := close\nvwap_ = sV > 0 ? sPV / sV : na\norReady = inRTH and hhmm >= 945\natr = ta.atr(14)\n\nvar fomc = array.from(20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)\nisFomc = array.includes(fomc, dInt)\n\nvix1d = request.security(\"CBOE:VIX1D\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nvixH = request.security(\"CBOE:VIX\", timeframe.period, high, lookahead=barmerge.lookahead_off)\nadd = request.security(\"USI:ADD\", timeframe.period, close, lookahead=barmerge.lookahead_off)\nsig = vix1d / 100.0\nemRem = close * sig * math.sqrt(math.max(tmin, 0) / 390.0 / 252.0)\n\n// ================= BETA signals (sweep + next-bar confirmation) =================\nrsi = ta.rsi(close, 14)\nph = ta.pivothigh(high, 5, 5)\npl = ta.pivotlow(low, 5, 5)\nvar float lastPH = na\nvar float lastPHrsi = na\nvar float lastPL = na\nvar float lastPLrsi = na\nvar float lastPLvix = na\nif not na(ph)\n    lastPH := ph\n    lastPHrsi := rsi[5]\nif not na(pl)\n    lastPL := pl\n    lastPLrsi := rsi[5]\n    lastPLvix := vixH[5]\nvar bool usePDH = false\nvar bool usePDL = false\nvar bool useORH = false\nvar bool useORL = false\nif rthStart\n    usePDH := false\n    usePDL := false\n    useORH := false\n    useORL := false\nf_swUp(float lv, bool used) => not used and not na(lv) and high > lv + syminfo.mintick and close < lv\nf_swDn(float lv, bool used) => not used and not na(lv) and low < lv - syminfo.mintick and close > lv\nsPDH = f_swUp(pdH, usePDH)\nsORH = orReady and f_swUp(orH, useORH)\nsPDL = f_swDn(pdL, usePDL)\nsORL = orReady and f_swDn(orL, useORL)\nbearSweep = inRTH and hhmm >= 945 and (sPDH or sORH)\nbullSweep = inRTH and hhmm >= 945 and (sPDL or sORL)\nif bearSweep\n    usePDH := usePDH or sPDH\n    useORH := useORH or sORH\nif bullSweep\n    usePDL := usePDL or sPDL\n    useORL := useORL or sORL\nbearDiv = not na(lastPH) and high > lastPH and rsi < lastPHrsi\nbullDivRsi = not na(lastPL) and low < lastPL and rsi > lastPLrsi\nbullDivVix = not na(lastPLvix) and vixH < lastPLvix\nknife = (not na(pdC) and not na(dATR) and rthOpen - pdC < -dATR) or close < vwap_ - 1.5 * atr\nvar bool pendBear = false\nvar bool pendBull = false\nvar float swHi = na\nvar float swLo = na\nvar float swMid = na\nconfBear = pendBear and close < swMid\nconfBull = pendBull and close > swMid\nbConfHi = swHi\nbConfLo = swLo\npendBear := false\npendBull := false\nif bearSweep and bearDiv\n    pendBear := true\n    swHi := high\n    swMid := hl2\nif bullSweep and (bullDivRsi or bullDivVix) and not knife\n    pendBull := true\n    swLo := low\n    swMid := hl2\n\n// ================= DELTA signals (HTF regime from confirmed closes + 5m pullback) =================\nema20 = ta.ema(close, 20)\nema50 = ta.ema(close, 50)\nvar float h1C = na\nvar float h1E20 = na\nvar float h1E50 = na\nvar float m15E9 = na\nvar float m15E21 = na\nvar int bearCnt15 = 0\nif timeframe.change(\"60\")\n    c1 = close[1]\n    h1C := c1\n    h1E20 := na(h1E20) ? c1 : h1E20 + 2.0 / 21.0 * (c1 - h1E20)\n    h1E50 := na(h1E50) ? c1 : h1E50 + 2.0 / 51.0 * (c1 - h1E50)\nif timeframe.change(\"15\")\n    c2 = close[1]\n    m15E9 := na(m15E9) ? c2 : m15E9 + 2.0 / 10.0 * (c2 - m15E9)\n    m15E21 := na(m15E21) ? c2 : m15E21 + 2.0 / 22.0 * (c2 - m15E21)\n    bearCnt15 := m15E9 < m15E21 ? bearCnt15 + 1 : 0\naddUp = add > 0 and add > add[3]\naddDn = add < 0 and add < add[3]\nbiasLong = h1E20 > h1E50 and h1C > h1E20 and m15E9 > m15E21\nbiasShort = h1E20 < h1E50 and h1C < h1E20 and h1C < h1E50 and bearCnt15 >= 2\npbL = low <= ema20 and close > ema50\npbS = high >= ema20 and close < ema50\ndLong = biasLong and addUp and pbL[1] and close > high[1]\ndShort = biasShort and addDn and pbS[1] and close < low[1]\npbLow = math.min(low, low[1])\npbHigh = math.max(high, high[1])\n\n// ================= options math =================\nf_ncdf(float x) =>\n    float z = math.abs(x) / math.sqrt(2.0)\n    float t = 1.0 / (1.0 + 0.3275911 * z)\n    float y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * math.exp(-z * z)\n    x >= 0 ? 0.5 * (1.0 + y) : 0.5 * (1.0 - y)\nf_iv(float S, float K, float base, bool isPut) =>\n    float m = isPut ? (S - K) / S * 100.0 : (K - S) / S * 100.0\n    float mult = isPut ? 1.0 + putSkew * m : 1.0 - callSkew * m\n    base * math.max(mult, 0.6)\nf_bs(float S, float K, float T, float iv, bool isPut) =>\n    float px = 0.0\n    float dl = 0.0\n    if T <= 0.0000001 or iv <= 0\n        px := isPut ? math.max(K - S, 0) : math.max(S - K, 0)\n        dl := isPut ? (S < K ? -1.0 : 0.0) : (S > K ? 1.0 : 0.0)\n    else\n        float sd = iv * math.sqrt(T)\n        float d1 = (math.log(S / K) + 0.5 * iv * iv * T) / sd\n        float d2 = d1 - sd\n        if isPut\n            px := K * f_ncdf(-d2) - S * f_ncdf(-d1)\n            dl := f_ncdf(d1) - 1.0\n        else\n            px := S * f_ncdf(d1) - K * f_ncdf(d2)\n            dl := f_ncdf(d1)\n    [px, dl]\nf_spread(float S, float Ks, float Kl, bool isPut, float T, float base) =>\n    [ps, dlS] = f_bs(S, Ks, T, f_iv(S, Ks, base, isPut), isPut)\n    [pk, dlL] = f_bs(S, Kl, T, f_iv(S, Kl, base, isPut), isPut)\n    ps - pk\nf_findShort(float S, float limitK, bool isPut, float T, float base, float dMax) =>\n    float K0 = isPut ? math.floor(limitK / 5.0) * 5.0 : math.ceil(limitK / 5.0) * 5.0\n    float found = na\n    float fdl = na\n    for i = 0 to 160\n        float Ki = isPut ? K0 - 5.0 * i : K0 + 5.0 * i\n        [p, dl] = f_bs(S, Ki, T, f_iv(S, Ki, base, isPut), isPut)\n        if math.abs(dl) <= dMax\n            found := Ki\n            fdl := dl\n            break\n    [found, fdl]\nf_intr(float S, float Ks, float Kl, bool isPut) =>\n    isPut ? math.max(Ks - S, 0) - math.max(Kl - S, 0) : math.max(S - Ks, 0) - math.max(S - Kl, 0)\n\n// ================= stats store: [period 0 = IS, 1 = OOS] x 27 fields =================\nNF = 27\nvar st = array.new_float(2 * NF, 0.0)\nif barstate.isfirst\n    array.set(st, 12, capital)\n    array.set(st, 13, capital)\n    array.set(st, NF + 12, capital)\n    array.set(st, NF + 13, capital)\nf_g(int p, int i) => array.get(st, p * NF + i)\nf_add(int p, int i, float v) => array.set(st, p * NF + i, array.get(st, p * NF + i) + v)\nper = time >= oosStart ? 1 : 0\nvar int firstDate = na\nif na(firstDate) and not na(vix1d)\n    firstDate := dInt\n\n// ---------- daily P&L for Sharpe ----------\nvar float dayPnl = 0.0\nvar int dayPer = 0\nvar bool dayStarted = false\nif rthStart\n    if dayStarted\n        f_add(dayPer, 15, dayPnl)\n        f_add(dayPer, 16, dayPnl * dayPnl)\n        f_add(dayPer, 17, 1.0)\n    dayPnl := 0.0\n    dayPer := per\n    dayStarted := true\n\n// ================= position management =================\nvar bool inPos = false\nvar bool posPut = false\nvar float pKs = na\nvar float pKl = na\nvar float pC = na\nvar float pN = na\nvar float pInv = na\nvar int pPer = 0\nvar int pEntryT = 0\nbool exitNow = false\nfloat exitV = na\nbool isSettle = false\nint reason = 0\nif inPos and rthStart\n    exitNow := true\n    isSettle := true\n    reason := 3\n    exitV := f_intr(close[1], pKs, pKl, posPut)\nelse if inPos\n    float advS = posPut ? low : high\n    float favS = posPut ? high : low\n    float vAdv = f_spread(advS, pKs, pKl, posPut, Tyr, sig)\n    float vFav = f_spread(favS, pKs, pKl, posPut, Tyr, sig)\n    float vCls = f_spread(close, pKs, pKl, posPut, Tyr, sig)\n    bool hitA = stopMode == \"A\" and vAdv >= 2.0 * pC\n    bool hitBack = vAdv >= 3.0 * pC\n    bool hitB = stopMode == \"B\" and (posPut ? close < pInv : close > pInv)\n    if hitA or hitBack\n        exitNow := true\n        reason := 2\n        exitV := math.max((hitA ? 2.0 : 3.0) * pC, vCls)\n    else if hitB\n        exitNow := true\n        reason := 2\n        exitV := vCls\n    else if vFav <= 0.5 * pC\n        exitNow := true\n        reason := 1\n        exitV := 0.5 * pC\n    else if isFomc and hhmm >= 1350\n        exitNow := true\n        exitV := vCls\n    else if hhmm == 1525\n        float dist = posPut ? close - pKs : pKs - close\n        bool holdIt = dist / close > 0.006 and vCls <= 0.15 * pC\n        if not holdIt\n            exitNow := true\n            exitV := vCls\n    else if hhmm >= 1555\n        exitNow := true\n        isSettle := true\n        reason := 3\n        exitV := f_intr(close, pKs, pKl, posPut)\nif exitNow\n    float slipX = isSettle ? 0.0 : slipSpread\n    float fees = 2.0 * pN * feeLeg + (isSettle ? 0.0 : 2.0 * pN * feeLeg)\n    float pnl = (pC - exitV - slipX) * 100.0 * pN - fees\n    f_add(pPer, 0, 1.0)\n    f_add(pPer, 26, pnl)\n    if pnl > 0\n        f_add(pPer, 1, 1.0)\n    f_add(pPer, pnl > 0 ? 2 : 3, math.abs(pnl))\n    int sb = posPut ? 4 : 8\n    f_add(pPer, sb, 1.0)\n    if pnl > 0\n        f_add(pPer, sb + 1, 1.0)\n        f_add(pPer, sb + 2, pnl)\n    else\n        f_add(pPer, sb + 3, -pnl)\n    f_add(pPer, 12, pnl)\n    float eqN = f_g(pPer, 12)\n    if eqN > f_g(pPer, 13)\n        array.set(st, pPer * NF + 13, eqN)\n    float ddN = (f_g(pPer, 13) - eqN) / f_g(pPer, 13) * 100.0\n    if ddN > f_g(pPer, 14)\n        array.set(st, pPer * NF + 14, ddN)\n    f_add(pPer, 18, (time_close - pEntryT) / 60000.0)\n    if reason > 0\n        f_add(pPer, reason == 1 ? 23 : reason == 2 ? 24 : 25, 1.0)\n    dayPnl += pnl\n    inPos := false\n\n// ================= entries =================\nbool win = agent == \"Beta\" ? (hhmm >= 1000 and hhmm < 1430 and not (hhmm >= 1200 and hhmm < 1330)) : (hhmm >= 1000 and hhmm < 1530 and not (hhmm >= 1200 and hhmm < 1330))\nbool fomcNo = isFomc and hhmm >= 1300\nbool goLong = agent == \"Beta\" ? confBull : dLong\nbool goShort = agent == \"Beta\" ? confBear : dShort\nif not inPos and not exitNow and inRTH and win and not fomcNo and not na(sig) and tmin > 10 and (goLong or goShort)\n    bool isPut = goLong\n    float limitK = na\n    float inval = na\n    if agent == \"Beta\"\n        limitK := isPut ? math.min(bConfLo, close - 1.25 * emRem) : math.max(bConfHi, close + 1.0 * emRem)\n        inval := isPut ? bConfLo : bConfHi\n    else\n        limitK := isPut ? math.min(pbLow, nz(h1E50, pbLow), close - 1.25 * emRem) : math.max(pbHigh, nz(h1E50, pbHigh), close + 1.0 * emRem)\n        inval := isPut ? pbLow - 0.25 * atr : pbHigh + 0.25 * atr\n    float dMax = isPut ? 0.15 : 0.20\n    f_add(per, 19, 1.0)\n    [Ks, dls] = f_findShort(close, limitK, isPut, Tyr, sig, dMax)\n    bool pinBad = hhmm >= 1430 and not na(Ks) and math.abs(Ks - close) / close <= 0.005\n    if na(Ks) or math.abs(dls) < 0.10 or pinBad\n        f_add(per, 20, 1.0)\n    else\n        float bestW = na\n        float bestC = na\n        float bestN = na\n        bool floorFail = false\n        bool budgetFail = false\n        float eqP = f_g(per, 12)\n        for w in array.from(15.0, 10.0, 5.0)\n            if na(bestW)\n                float Kl = isPut ? Ks - w : Ks + w\n                float cr = f_spread(close, Ks, Kl, isPut, Tyr, sig) - slipSpread\n                bool okF = cr >= math.max(0.10 * w, 0.85 * math.abs(dls) * w)\n                float ml = (w - cr) * 100.0\n                float nn = math.floor(eqP * 0.01 / ml)\n                if not okF\n                    floorFail := true\n                else if nn < 1\n                    budgetFail := true\n                else\n                    bestW := w\n                    bestC := cr\n                    bestN := nn\n        if na(bestW)\n            f_add(per, floorFail ? 21 : 22, 1.0)\n        else\n            inPos := true\n            posPut := isPut\n            pKs := Ks\n            pKl := isPut ? Ks - bestW : Ks + bestW\n            pC := bestC\n            pN := bestN\n            pInv := inval\n            pPer := per\n            pEntryT := time_close\n\n// ================= output (last bar values are the report) =================\nf_o(int p, float v) => p == 1 and not showOOS ? na : v\nf_pf(int p) => f_g(p, 3) > 0 ? f_g(p, 2) / f_g(p, 3) : na\nf_spf(int p, int b) => f_g(p, b + 3) > 0 ? f_g(p, b + 2) / f_g(p, b + 3) : na\nf_sh(int p) =>\n    float n = f_g(p, 17)\n    float m = n > 0 ? f_g(p, 15) / n : na\n    float v = n > 0 ? f_g(p, 16) / n - m * m : na\n    v > 0 ? m / math.sqrt(v) * math.sqrt(252.0) : na\nplot(firstDate, \"first_date\")\nplot(f_g(0, 17), \"is_days\")\nplot(f_o(1, f_g(1, 17)), \"oos_days\")\nplot(f_g(0, 0), \"is_trades\")\nplot(f_pf(0), \"is_pf\")\nplot(f_g(0, 26) / capital * 100.0, \"is_net_pct\")\nplot(f_g(0, 0) > 0 ? f_g(0, 1) / f_g(0, 0) * 100.0 : na, \"is_winrate\")\nplot(f_g(0, 4), \"is_long_n\")\nplot(f_g(0, 4) > 0 ? f_g(0, 5) / f_g(0, 4) * 100.0 : na, \"is_long_wr\")\nplot(f_spf(0, 4), \"is_long_pf\")\nplot(f_g(0, 8), \"is_short_n\")\nplot(f_g(0, 8) > 0 ? f_g(0, 9) / f_g(0, 8) * 100.0 : na, \"is_short_wr\")\nplot(f_spf(0, 8), \"is_short_pf\")\nplot(f_g(0, 14), \"is_maxdd_pct\")\nplot(f_sh(0), \"is_sharpe\")\nplot(f_g(0, 0) > 0 ? f_g(0, 18) / f_g(0, 0) : na, \"is_avg_hold_min\")\nplot(f_g(0, 19), \"is_signals\")\nplot(f_g(0, 20), \"is_rej_delta_or_pin\")\nplot(f_g(0, 21), \"is_rej_credit_floor\")\nplot(f_g(0, 22), \"is_rej_budget\")\nplot(f_g(0, 23), \"is_exit_pt\")\nplot(f_g(0, 24), \"is_exit_stop\")\nplot(f_g(0, 25), \"is_exit_settle\")\nplot(f_o(1, f_g(1, 0)), \"oos_trades\")\nplot(f_o(1, f_pf(1)), \"oos_pf\")\nplot(f_o(1, f_g(1, 26) / capital * 100.0), \"oos_net_pct\")\nplot(f_o(1, f_g(1, 0) > 0 ? f_g(1, 1) / f_g(1, 0) * 100.0 : na), \"oos_winrate\")\nplot(f_o(1, f_g(1, 4)), \"oos_long_n\")\nplot(f_o(1, f_spf(1, 4)), \"oos_long_pf\")\nplot(f_o(1, f_g(1, 8)), \"oos_short_n\")\nplot(f_o(1, f_spf(1, 8)), \"oos_short_pf\")\nplot(f_o(1, f_g(1, 14)), \"oos_maxdd_pct\")\nplot(f_o(1, f_sh(1)), \"oos_sharpe\")\nplot(f_o(1, f_g(1, 19)), \"oos_signals\")\n"
+  },
+  "pineGen": 2
  }
 }
