@@ -1,0 +1,69 @@
+//@version=6
+strategy("TQ H3 Intraday Momentum MNQ", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=100000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, margin_long=10, margin_short=10)
+// Quant Tournament Gen 3 / H3 (pre-registered). Signal: sign of the first-half-hour return (prior RTH close -> 10:00 ET).
+// Trade: enter in that direction at the 15:30 ET open, exit at the 16:00 ET open. No stop. 1x notional sizing.
+// Null: a random-direction trade has mean 0, so t = mean(signed return - cost) / (sd / sqrt(n)).
+// The in-script statistics are stamped into the comment of one marker trade opened after statsTime (it stays open,
+// so it does not touch closed-trade performance).
+costPts = input.float(1.5, "Round-trip cost per contract in index points ($2 fees + 2 ticks = $3 = 1.5 pts)")
+statsTime = input.time(timestamp("America/New_York", 2025, 6, 27, 16, 30), "Stamp statistics after")
+
+tz = "America/New_York"
+hhmm = hour(time, tz) * 100 + minute(time, tz)
+dInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)
+inRTH = hhmm >= 930 and hhmm < 1600
+newDay = inRTH and (not inRTH[1] or dInt != nz(dInt[1]))
+
+var float pdC = na
+var float lastRthC = na
+var float r1 = na
+var float o1530 = na
+if newDay
+    pdC := lastRthC
+    r1 := na
+    o1530 := na
+if inRTH
+    lastRthC := close
+if hhmm == 955 and not na(pdC)
+    r1 := close / pdC - 1
+if hhmm == 1530
+    o1530 := open
+
+qty = math.max(1, math.floor(strategy.equity / (close * syminfo.pointvalue)))
+if hhmm == 1525 and not na(r1) and r1 != 0 and strategy.position_size == 0 and time < statsTime
+    if r1 > 0
+        strategy.entry("L", strategy.long, qty=qty)
+    else
+        strategy.entry("S", strategy.short, qty=qty)
+if hhmm == 1555 and strategy.position_size != 0
+    strategy.close_all(comment="16:00 exit")
+
+// ---------- statistics (per contract, index points) ----------
+var float n = 0.0
+var float sx = 0.0
+var float sxx = 0.0
+var float sy = 0.0
+var float syy = 0.0
+var float hits = 0.0
+if hhmm == 1555 and not na(o1530) and not na(r1) and r1 != 0 and time < statsTime
+    float rl = close - o1530
+    float x = math.sign(r1) * rl - costPts
+    float y = rl - costPts
+    n += 1
+    sx += x
+    sxx += x * x
+    sy += y
+    syy += y * y
+    hits += math.sign(r1) * rl > 0 ? 1 : 0
+
+var bool stamped = false
+if not stamped and time >= statsTime and n > 2
+    stamped := true
+    float mx = sx / n
+    float sdx = math.sqrt(math.max(sxx / n - mx * mx, 0) * n / (n - 1))
+    float tx = sdx > 0 ? mx / (sdx / math.sqrt(n)) : na
+    float my = sy / n
+    float sdy = math.sqrt(math.max(syy / n - my * my, 0) * n / (n - 1))
+    float ty = sdy > 0 ? my / (sdy / math.sqrt(n)) : na
+    string txt = "STATS n=" + str.tostring(n, "#") + " mean_pts=" + str.tostring(mx, "#.###") + " sd=" + str.tostring(sdx, "#.##") + " t=" + str.tostring(tx, "#.##") + " hit=" + str.tostring(hits / n, "#.###") + " | always-long mean_pts=" + str.tostring(my, "#.###") + " t=" + str.tostring(ty, "#.##")
+    strategy.entry("STATS", strategy.long, qty=1, comment=txt)

@@ -1,0 +1,276 @@
+//@version=6
+indicator("TQ H1-H2 SPX 0DTE Condor VRP", overlay=false, max_bars_back=500)
+// Quant Tournament Gen 3 / H1 + H2 (pre-registered). Direction-free short premium: sell one SPXW 0DTE iron condor at the
+// 10:00 ET bar close, short strikes = first 5-pt strike with |delta| <= dMax on each side, fixed wings. Exit at 50% of
+// credit (5m close value) or at the 15:30 close. No stop: max loss is defined by the wings.
+// MODELED pricing: Black-Scholes, ATM IV = VIX1D x atmScale, linear put skew in moneyness (three values = three books).
+// Skew calibrated 2026-11-20 from real SPXW 0DTE trades at 10:00 ET: put slope 0.10-0.31 per 1% OTM (regime-dependent), call side flat.
+// Books 0-2: H1 (no filter). Books 3-5: H2 (skip if VIX > VIX3M, event day, or |open gap| > 1 daily ATR).
+// In-sample only: nothing at or after oosStart is simulated, so the OOS window stays unseen.
+skLo = input.float(0.10, "Put skew, low book")
+skMid = input.float(0.20, "Put skew, mid book")
+skHi = input.float(0.30, "Put skew, high book")
+callSkew = input.float(0.0, "Call IV reduction per 1% OTM")
+atmScale = input.float(1.0, "ATM IV = VIX1D x this (set from the anchor check)")
+slipVert = input.float(0.10, "Slippage per vertical per fill ($ premium)")
+feeLeg = input.float(1.0, "Fee per contract per leg per side ($)")
+wing = input.float(10, "Wing width (points)")
+dMax = input.float(0.15, "Short strike max |delta|")
+capital = input.float(100000, "Starting equity per book")
+oosStart = timestamp("America/New_York", 2026, 8, 1, 0, 0)
+
+tz = "America/New_York"
+hh = hour(time, tz)
+mi = minute(time, tz)
+hhmm = hh * 100 + mi
+dInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)
+inRTH = hhmm >= 930 and hhmm < 1600
+rthStart = inRTH and (dInt != nz(dInt[1]) or not inRTH[1])
+tmin = 960 - (hh * 60 + mi + 5)
+Tyr = math.max(tmin, 0) / 390.0 / 252.0
+inIS = time < oosStart
+
+var float dH = na
+var float dL = na
+var float pdC = na
+var float lastRthC = na
+var float dATR = na
+var float rthOpen = na
+if rthStart
+    if not na(dH)
+        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))
+        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14
+        pdC := lastRthC
+    dH := high
+    dL := low
+    rthOpen := open
+else if inRTH
+    dH := math.max(dH, high)
+    dL := math.min(dL, low)
+if inRTH
+    lastRthC := close
+
+vix1d = request.security("CBOE:VIX1D", timeframe.period, close, lookahead=barmerge.lookahead_off)
+vixC = request.security("CBOE:VIX", timeframe.period, close, lookahead=barmerge.lookahead_off)
+vix3m = request.security("CBOE:VIX3M", timeframe.period, close, lookahead=barmerge.lookahead_off)
+sig = vix1d / 100.0 * atmScale
+
+// FOMC + CPI + NFP + PCE release days (TradingView economic calendar)
+var events = array.from(__EVENTS__)
+isEvent = array.includes(events, dInt)
+gapBig = not na(dATR) and not na(pdC) and math.abs(rthOpen - pdC) > dATR
+termInv = not na(vix3m) and vixC > vix3m
+skipFilt = isEvent or gapBig or termInv
+
+f_ncdf(float x) =>
+    float z = math.abs(x) / math.sqrt(2.0)
+    float t = 1.0 / (1.0 + 0.3275911 * z)
+    float y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * math.exp(-z * z)
+    x >= 0 ? 0.5 * (1.0 + y) : 0.5 * (1.0 - y)
+f_iv(float S, float K, float base, bool isPut, float ps) =>
+    float m = isPut ? (S - K) / S * 100.0 : (K - S) / S * 100.0
+    float mult = isPut ? 1.0 + ps * m : 1.0 - callSkew * m
+    base * math.max(mult, 0.6)
+f_bs(float S, float K, float T, float iv, bool isPut) =>
+    float px = 0.0
+    float dl = 0.0
+    if T <= 0.0000001 or iv <= 0
+        px := isPut ? math.max(K - S, 0) : math.max(S - K, 0)
+        dl := isPut ? (S < K ? -1.0 : 0.0) : (S > K ? 1.0 : 0.0)
+    else
+        float sd = iv * math.sqrt(T)
+        float d1 = (math.log(S / K) + 0.5 * iv * iv * T) / sd
+        float d2 = d1 - sd
+        if isPut
+            px := K * f_ncdf(-d2) - S * f_ncdf(-d1)
+            dl := f_ncdf(d1) - 1.0
+        else
+            px := S * f_ncdf(d1) - K * f_ncdf(d2)
+            dl := f_ncdf(d1)
+    [px, dl]
+f_vert(float S, float Ks, float Kl, bool isPut, float T, float base, float ps) =>
+    [a, da] = f_bs(S, Ks, T, f_iv(S, Ks, base, isPut, ps), isPut)
+    [b, db] = f_bs(S, Kl, T, f_iv(S, Kl, base, isPut, ps), isPut)
+    a - b
+f_short(float S, bool isPut, float T, float base, float ps) =>
+    float K0 = isPut ? math.floor(S / 5.0) * 5.0 : math.ceil(S / 5.0) * 5.0
+    float found = na
+    for i = 0 to 200
+        float Ki = isPut ? K0 - 5.0 * i : K0 + 5.0 * i
+        [p, dl] = f_bs(S, Ki, T, f_iv(S, Ki, base, isPut, ps), isPut)
+        if math.abs(dl) <= dMax
+            found := Ki
+            break
+    found
+f_intr(float S, float kps, float kpl, float kcs, float kcl) =>
+    math.max(kps - S, 0) - math.max(kpl - S, 0) + math.max(S - kcs, 0) - math.max(S - kcl, 0)
+
+type Book
+    float skew
+    bool filt
+    bool inPos = false
+    float kps = na
+    float kpl = na
+    float kcs = na
+    float kcl = na
+    float credit = na
+    float n = na
+    float eq = 0.0
+    float peak = 0.0
+    float maxdd = 0.0
+    float net = 0.0
+    float gw = 0.0
+    float gl = 0.0
+    int trades = 0
+    int wins = 0
+    int nPT = 0
+    int skipped = 0
+    float dayPnl = 0.0
+    array<float> days
+
+var array<Book> books = array.new<Book>()
+if barstate.isfirst
+    for i = 0 to 5
+        float sk = i % 3 == 0 ? skLo : i % 3 == 1 ? skMid : skHi
+        array.push(books, Book.new(skew = sk, filt = i >= 3, eq = capital, peak = capital, days = array.new<float>()))
+
+f_book(Book b, float pnl, bool isPT) =>
+    b.trades += 1
+    b.net += pnl
+    b.eq += pnl
+    b.dayPnl += pnl
+    if pnl > 0
+        b.wins += 1
+        b.gw += pnl
+    else
+        b.gl -= pnl
+    if isPT
+        b.nPT += 1
+    if b.eq > b.peak
+        b.peak := b.eq
+    float dd = (b.peak - b.eq) / b.peak * 100.0
+    if dd > b.maxdd
+        b.maxdd := dd
+    b.inPos := false
+
+var bool dayStarted = false
+var bool prevDayIS = true
+for i = 0 to array.size(books) - 1
+    Book b = array.get(books, i)
+    if rthStart
+        if b.inPos
+            float v = f_intr(close[1], b.kps, b.kpl, b.kcs, b.kcl)
+            f_book(b, (b.credit - v) * 100.0 * b.n - 4.0 * b.n * feeLeg, false)
+        if dayStarted and prevDayIS
+            array.push(b.days, b.dayPnl)
+        b.dayPnl := 0.0
+    else if b.inPos
+        float v = f_vert(close, b.kps, b.kpl, true, Tyr, sig, b.skew) + f_vert(close, b.kcs, b.kcl, false, Tyr, sig, b.skew)
+        if v <= 0.5 * b.credit or hhmm >= 1525
+            f_book(b, (b.credit - v - 2.0 * slipVert) * 100.0 * b.n - 8.0 * b.n * feeLeg, v <= 0.5 * b.credit)
+    if inIS and inRTH and hhmm == 955 and not b.inPos and not na(sig) and tmin > 0
+        if b.filt and skipFilt
+            b.skipped += 1
+        else
+            float kps = f_short(close, true, Tyr, sig, b.skew)
+            float kcs = f_short(close, false, Tyr, sig, b.skew)
+            if not na(kps) and not na(kcs)
+                float kpl = kps - wing
+                float kcl = kcs + wing
+                float mid = f_vert(close, kps, kpl, true, Tyr, sig, b.skew) + f_vert(close, kcs, kcl, false, Tyr, sig, b.skew)
+                float cr = mid - 2.0 * slipVert
+                float ml = (wing - cr) * 100.0
+                float nn = ml > 0 ? math.floor(b.eq * 0.01 / ml) : 0.0
+                if cr > 0 and nn >= 1
+                    b.inPos := true
+                    b.kps := kps
+                    b.kpl := kpl
+                    b.kcs := kcs
+                    b.kcl := kcl
+                    b.credit := cr
+                    b.n := nn
+if rthStart
+    dayStarted := true
+    prevDayIS := inIS
+
+// ---------- report (computed once, on the last bar) ----------
+NM = 8
+var array<float> out = array.new_float(6 * NM, na)
+var float nDays = na
+if barstate.islast
+    for i = 0 to 5
+        Book b = array.get(books, i)
+        int nd = array.size(b.days)
+        nDays := nd
+        array<float> srt = array.copy(b.days)
+        array.sort(srt, order.ascending)
+        int k = math.max(1, int(math.ceil(0.05 * nd)))
+        float cv = 0.0
+        for j = 0 to k - 1
+            cv += nd > 0 ? array.get(srt, j) : 0.0
+        float mean = nd > 0 ? array.avg(b.days) : na
+        float dsq = 0.0
+        if nd > 0
+            for j = 0 to nd - 1
+                float dv = array.get(b.days, j)
+                dsq += dv < 0 ? dv * dv : 0.0
+        float dd = nd > 0 ? math.sqrt(dsq / nd) : na
+        array.set(out, i * NM + 0, b.trades)
+        array.set(out, i * NM + 1, b.net / capital * 100.0)
+        array.set(out, i * NM + 2, b.trades > 0 ? b.wins / b.trades * 100.0 : na)
+        array.set(out, i * NM + 3, b.gl > 0 ? b.gw / b.gl : na)
+        array.set(out, i * NM + 4, nd > 0 ? array.get(srt, 0) / capital * 100.0 : na)
+        array.set(out, i * NM + 5, cv / k / capital * 100.0)
+        array.set(out, i * NM + 6, b.maxdd)
+        array.set(out, i * NM + 7, dd > 0 ? mean / dd * math.sqrt(252.0) : na)
+
+plot(nDays, "is_days")
+plot(array.get(out, 0), "h1_skLo_trades")
+plot(array.get(out, 1), "h1_skLo_net_pct")
+plot(array.get(out, 2), "h1_skLo_winrate")
+plot(array.get(out, 3), "h1_skLo_pf")
+plot(array.get(out, 4), "h1_skLo_worst_day_pct")
+plot(array.get(out, 5), "h1_skLo_cvar95_pct")
+plot(array.get(out, 6), "h1_skLo_maxdd_pct")
+plot(array.get(out, 7), "h1_skLo_sortino")
+plot(array.get(out, 8), "h1_skMid_trades")
+plot(array.get(out, 9), "h1_skMid_net_pct")
+plot(array.get(out, 10), "h1_skMid_winrate")
+plot(array.get(out, 11), "h1_skMid_pf")
+plot(array.get(out, 12), "h1_skMid_worst_day_pct")
+plot(array.get(out, 13), "h1_skMid_cvar95_pct")
+plot(array.get(out, 14), "h1_skMid_maxdd_pct")
+plot(array.get(out, 15), "h1_skMid_sortino")
+plot(array.get(out, 16), "h1_skHi_trades")
+plot(array.get(out, 17), "h1_skHi_net_pct")
+plot(array.get(out, 18), "h1_skHi_winrate")
+plot(array.get(out, 19), "h1_skHi_pf")
+plot(array.get(out, 20), "h1_skHi_worst_day_pct")
+plot(array.get(out, 21), "h1_skHi_cvar95_pct")
+plot(array.get(out, 22), "h1_skHi_maxdd_pct")
+plot(array.get(out, 23), "h1_skHi_sortino")
+plot(array.get(out, 24), "h2_skLo_trades")
+plot(array.get(out, 25), "h2_skLo_net_pct")
+plot(array.get(out, 26), "h2_skLo_winrate")
+plot(array.get(out, 27), "h2_skLo_pf")
+plot(array.get(out, 28), "h2_skLo_worst_day_pct")
+plot(array.get(out, 29), "h2_skLo_cvar95_pct")
+plot(array.get(out, 30), "h2_skLo_maxdd_pct")
+plot(array.get(out, 31), "h2_skLo_sortino")
+plot(array.get(out, 32), "h2_skMid_trades")
+plot(array.get(out, 33), "h2_skMid_net_pct")
+plot(array.get(out, 34), "h2_skMid_winrate")
+plot(array.get(out, 35), "h2_skMid_pf")
+plot(array.get(out, 36), "h2_skMid_worst_day_pct")
+plot(array.get(out, 37), "h2_skMid_cvar95_pct")
+plot(array.get(out, 38), "h2_skMid_maxdd_pct")
+plot(array.get(out, 39), "h2_skMid_sortino")
+plot(array.get(out, 40), "h2_skHi_trades")
+plot(array.get(out, 41), "h2_skHi_net_pct")
+plot(array.get(out, 42), "h2_skHi_winrate")
+plot(array.get(out, 43), "h2_skHi_pf")
+plot(array.get(out, 44), "h2_skHi_worst_day_pct")
+plot(array.get(out, 45), "h2_skHi_cvar95_pct")
+plot(array.get(out, 46), "h2_skHi_maxdd_pct")
+plot(array.get(out, 47), "h2_skHi_sortino")
+plot(array.size(books) > 3 ? array.get(books, 4).skipped : na, "h2_days_skipped")

@@ -1,0 +1,17 @@
+//@version=6
+indicator("TQ Gen3 VIX1D anchor check", overlay=false)
+// Compares VIX1D at 10:00 ET with the real SPXW 0DTE ATM implied vol backed out from Robinhood trade bars:
+// 2026-11-13: 10.9%   2026-11-18: 15.3%   (T = 360 trading minutes / 390 / 252). Reads index levels only; no P&L.
+tz = "America/New_York"
+v = request.security("CBOE:VIX1D", timeframe.period, close, lookahead=barmerge.lookahead_off)
+k = year(time, tz) * 100000000 + month(time, tz) * 1000000 + dayofmonth(time, tz) * 10000 + hour(time, tz) * 100 + minute(time, tz)
+var float a13 = na
+var float a18 = na
+if k == 202611130955
+    a13 := v
+if k == 202611180955
+    a18 := v
+plot(a13, "vix1d_20261113_1000")
+plot(a18, "vix1d_20261118_1000")
+plot(a13 / 10.9, "scale_13 (real ATM / VIX1D, invert)")
+plot(a18 / 15.3, "scale_18 (real ATM / VIX1D, invert)")

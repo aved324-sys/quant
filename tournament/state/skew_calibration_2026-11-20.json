@@ -1,0 +1,32 @@
+{
+ "date": "2026-11-20",
+ "method": "BS implied vol from last-trade 5m bar closes at 10:00 ET, T=360/390/252",
+ "days": {
+  "2026-11-13": {
+   "spot": 7564.68,
+   "atmIV": 0.109,
+   "putSlopes": [
+    0.24,
+    0.28,
+    0.31
+   ],
+   "callSlopes": [
+    -0.06,
+    0.0
+   ]
+  },
+  "2026-11-18": {
+   "spot": 7354.63,
+   "atmIV": 0.153,
+   "putSlopes": [
+    0.1,
+    0.11,
+    0.12
+   ],
+   "callSlopes": [
+    -0.01,
+    -0.01
+   ]
+  }
+ }
+}
