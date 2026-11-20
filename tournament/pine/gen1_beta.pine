@@ -1,0 +1,210 @@
+//@version=6
+strategy("TQ Beta G1", overlay=true, calc_on_every_tick=false, process_orders_on_close=false, initial_capital=50000, currency=currency.USD, commission_type=strategy.commission.cash_per_contract, commission_value=1.0, slippage=1, pyramiding=0, default_qty_type=strategy.fixed, default_qty_value=1, max_bars_back=500, margin_long=10, margin_short=10)
+// Quant Tournament - Generation 1 (spec: tournament/PHASE1_SPEC.md). Zero-repaint: bar-close signals,
+// next-bar-open fills, no HTF request.security, no lookahead. Friction: $1/contract/side + 1 tick/side.
+riskPct = input.float(1.0, "Risk % equity per trade", minval=0.1, maxval=2.0)
+useChop = input.bool(true, "Chop filter: ADX<20 or range<0.35 dATR")
+useDead = input.bool(true, "Midday dead zone 12:00-13:30 ET")
+
+// ---------- time (America/New_York, bar OPEN time) ----------
+tz = "America/New_York"
+hhmm = hour(time, tz) * 100 + minute(time, tz)
+dInt = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)
+inRTH = hhmm >= 930 and hhmm < 1600
+rthStart = inRTH and not inRTH[1]
+
+// ---------- session state, built in-script (no request.security on HTF) ----------
+var float dH = na
+var float dL = na
+var float pdH = na
+var float pdL = na
+var float pdC = na
+var float lastRthC = na
+var float orH = na
+var float orL = na
+var float onH = na
+var float onL = na
+var float sPV = 0.0
+var float sV = 0.0
+var float dATR = na
+var float rthOpen = na
+var int nL = 0
+var int nS = 0
+if hhmm == 1800
+    onH := high
+    onL := low
+else if not inRTH and not na(onH)
+    onH := math.max(onH, high)
+    onL := math.min(onL, low)
+if rthStart
+    if not na(dH)
+        tr = math.max(dH, nz(pdC, dH)) - math.min(dL, nz(pdC, dL))
+        dATR := na(dATR) ? tr : (dATR * 13 + tr) / 14
+        pdH := dH
+        pdL := dL
+        pdC := lastRthC
+    dH := high
+    dL := low
+    orH := high
+    orL := low
+    sPV := 0.0
+    sV := 0.0
+    rthOpen := open
+    nL := 0
+    nS := 0
+else if inRTH
+    dH := math.max(dH, high)
+    dL := math.min(dL, low)
+    if hhmm < 945
+        orH := math.max(orH, high)
+        orL := math.min(orL, low)
+if inRTH
+    sPV += hlc3 * volume
+    sV += volume
+    lastRthC := close
+vwap_ = sV > 0 ? sPV / sV : na
+orReady = inRTH and hhmm >= 945
+
+// ---------- shared indicators ----------
+atr = ta.atr(14)
+[diP, diM, adx] = ta.dmi(14, 14)
+rangeOk = hhmm < 1030 or na(dATR) ? true : (dH - dL) / dATR >= 0.35
+chopOK = not useChop or (adx >= 20 and rangeOk)
+deadZ = useDead and hhmm >= 1200 and hhmm < 1330
+
+// ---------- event filter: FOMC decision days (TradingView economic calendar) ----------
+var fomc = array.from(20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214, 20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213, 20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218, 20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210, 20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209)
+isFomc = array.includes(fomc, dInt)
+fomcBlock = isFomc and hhmm >= 1355 and hhmm < 1430
+
+// ---------- VIX (same timeframe, confirmed bars only) ----------
+vixC = request.security("CBOE:VIX", timeframe.period, close, lookahead=barmerge.lookahead_off)
+vixH = request.security("CBOE:VIX", timeframe.period, high, lookahead=barmerge.lookahead_off)
+var float vixLast = na
+var float vixPrev = na
+if rthStart
+    vixPrev := vixLast
+if inRTH
+    vixLast := vixC
+vixUp = not na(vixPrev) and vixC > vixPrev
+
+// ---------- sizing: fixed-fractional risk ----------
+f_qty(float dist) =>
+    float q = 0.0
+    if dist > 0
+        q := math.floor(strategy.equity * riskPct / 100.0 / (dist * syminfo.pointvalue))
+    q
+
+flat = strategy.position_size == 0
+barsIn = strategy.position_size != 0 ? bar_index - strategy.opentrades.entry_bar_index(0) : 0
+var float stopPx = na
+var float tgtPx = na
+var float rPts = na
+var float entRef = na
+var bool trailOn = false
+
+// ================= AGENT BETA: Liquidity sweep / failed acceptance reversal =================
+rsi = ta.rsi(close, 14)
+ph = ta.pivothigh(high, 5, 5)
+pl = ta.pivotlow(low, 5, 5)
+var float lastPH = na
+var float lastPHrsi = na
+var float lastPL = na
+var float lastPLrsi = na
+var float lastPLvix = na
+if not na(ph)
+    lastPH := ph
+    lastPHrsi := rsi[5]
+if not na(pl)
+    lastPL := pl
+    lastPLrsi := rsi[5]
+    lastPLvix := vixH[5]
+
+var bool usePDH = false
+var bool usePDL = false
+var bool useONH = false
+var bool useONL = false
+var bool useORH = false
+var bool useORL = false
+if rthStart
+    usePDH := false
+    usePDL := false
+    useONH := false
+    useONL := false
+    useORH := false
+    useORL := false
+
+winB = hhmm >= 945 and hhmm < 1430 and not deadZ
+f_swUp(float lv, bool used) => not used and not na(lv) and high > lv + syminfo.mintick and close < lv
+f_swDn(float lv, bool used) => not used and not na(lv) and low < lv - syminfo.mintick and close > lv
+sPDH = f_swUp(pdH, usePDH)
+sONH = f_swUp(onH, useONH)
+sORH = orReady and f_swUp(orH, useORH)
+sPDL = f_swDn(pdL, usePDL)
+sONL = f_swDn(onL, useONL)
+sORL = orReady and f_swDn(orL, useORL)
+bearSweep = inRTH and hhmm >= 945 and (sPDH or sONH or sORH)
+bullSweep = inRTH and hhmm >= 945 and (sPDL or sONL or sORL)
+if bearSweep
+    usePDH := usePDH or sPDH
+    useONH := useONH or sONH
+    useORH := useORH or sORH
+if bullSweep
+    usePDL := usePDL or sPDL
+    useONL := useONL or sONL
+    useORL := useORL or sORL
+
+bearDiv = not na(lastPH) and high > lastPH and rsi < lastPHrsi
+bullDivRsi = not na(lastPL) and low < lastPL and rsi > lastPLrsi
+bullDivVix = not na(lastPLvix) and vixH < lastPLvix
+knife = (not na(pdC) and not na(dATR) and rthOpen - pdC < -dATR) or close < vwap_ - 1.5 * atr
+
+// pending sweep -> confirmation on the NEXT bar close
+var bool pendBear = false
+var bool pendBull = false
+var float swHi = na
+var float swLo = na
+var float swMid = na
+confBear = pendBear and close < swMid
+confBull = pendBull and close > swMid
+pendBear := false
+pendBull := false
+if bearSweep and bearDiv
+    pendBear := true
+    swHi := high
+    swMid := hl2
+if bullSweep and (bullDivRsi or bullDivVix) and not knife
+    pendBull := true
+    swLo := low
+    swMid := hl2
+
+canEnter = flat and winB and chopOK and not fomcBlock
+shortSig = canEnter and confBear and nS == 0
+longSig = canEnter and confBull and nL == 0
+
+if shortSig
+    stopPx := swHi + 0.25 * atr
+    d = stopPx - close
+    q = f_qty(d)
+    if q >= 1
+        t1 = vwap_ < close - 0.25 * atr ? vwap_ : close - d
+        t2 = orL < close - d ? orL : close - 2.0 * d
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("S1", "S", qty_percent=50, stop=stopPx, limit=t1)
+        strategy.exit("S2", "S", stop=stopPx, limit=t2)
+        nS += 1
+if longSig
+    stopPx := swLo - 0.25 * atr
+    d = close - stopPx
+    q = f_qty(d)
+    if q >= 1
+        t1 = vwap_ > close + 0.25 * atr ? vwap_ : close + d
+        t2 = orH > close + d ? orH : close + 2.0 * d
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("L1", "L", qty_percent=50, stop=stopPx, limit=t1)
+        strategy.exit("L2", "L", stop=stopPx, limit=t2)
+        nL += 1
+
+// ---------- end-of-day flatten ----------
+if hhmm >= 1550 or not inRTH
+    strategy.close_all(comment="EOD")

@@ -1,0 +1,1 @@
+{"id": "m005", "gen": 1, "agent": "Gamma", "kind": "failure", "date": "2026-11-20", "title": "Gamma over-trades the short side", "detail": "268 shorts against 41 longs on MNQ. The short-only 'expansion without squeeze' trigger fires on most volatile bars. Longs (PF 1.26 on MNQ, 41 trades) are too few to judge.", "oosImpact": "OOS not touched", "status": "diagnosed"}

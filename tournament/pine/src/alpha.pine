@@ -1,0 +1,54 @@
+
+// ================= AGENT ALPHA: Opening-range / VWAP / DMI momentum =================
+ema9 = ta.ema(close, 9)
+volSma = ta.sma(volume, 20)
+var bool upUsed = false
+var bool dnUsed = false
+if rthStart
+    upUsed := false
+    dnUsed := false
+upBreak = orReady and not upUsed and close > orH
+dnBreak = orReady and not dnUsed and close < orL
+if upBreak
+    upUsed := true
+if dnBreak
+    dnUsed := true
+
+winA = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1500)) and not deadZ
+canEnter = flat and winA and chopOK and not fomcBlock
+
+longSig = canEnter and upBreak and close > vwap_ and adx >= 20 and diP > diM and volume > volSma and nL == 0
+// Short is NOT a mirror: requires VIX up on the day, no volume requirement, fixed 2R target + time stop
+shortSig = canEnter and dnBreak and close < vwap_ and adx >= 20 and diM > diP and vixUp and nS == 0
+
+if longSig
+    q = f_qty(atr)
+    if q >= 1
+        stopPx := close - atr
+        rPts := atr
+        entRef := close
+        trailOn := false
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("XL", "L", stop=stopPx)
+        nL += 1
+if shortSig
+    q = f_qty(atr)
+    if q >= 1
+        stopPx := close + atr
+        tgtPx := close - 2.0 * atr
+        rPts := atr
+        entRef := close
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+        nS += 1
+
+if strategy.position_size > 0
+    strategy.exit("XL", "L", stop=stopPx)
+    if high >= entRef + rPts
+        trailOn := true
+    if trailOn and close < ema9
+        strategy.close("L", comment="trail EMA9")
+if strategy.position_size < 0
+    strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+    if barsIn >= 6 and close > entRef - 0.5 * rPts
+        strategy.close("S", comment="time stop")

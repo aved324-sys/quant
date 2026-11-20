@@ -1,0 +1,1 @@
+{"id": "m006", "gen": 1, "agent": "Delta", "kind": "failure", "date": "2026-11-20", "title": "Delta shorts fail in an up-trending sample", "detail": "Short PF 0.72 (MES) and 0.74 (MNQ) with 246-259 trades; longs 0.78 / 1.17. The 1h/15m bear regime flips too often in a market that rose ~30% over the IS window.", "oosImpact": "OOS not touched", "status": "diagnosed"}

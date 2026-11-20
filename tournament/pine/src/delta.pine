@@ -1,0 +1,76 @@
+
+// ================= AGENT DELTA: Multi-timeframe regime pullback =================
+ema9 = ta.ema(close, 9)
+ema20 = ta.ema(close, 20)
+ema50 = ta.ema(close, 50)
+// HTF EMAs from CONFIRMED HTF closes, built in-script (identical historical vs realtime)
+var float h1C = na
+var float h1E20 = na
+var float h1E50 = na
+var float m15E9 = na
+var float m15E21 = na
+var int bearCnt15 = 0
+if timeframe.change("60")
+    c = close[1]
+    h1C := c
+    h1E20 := na(h1E20) ? c : h1E20 + 2.0 / 21.0 * (c - h1E20)
+    h1E50 := na(h1E50) ? c : h1E50 + 2.0 / 51.0 * (c - h1E50)
+if timeframe.change("15")
+    c = close[1]
+    m15E9 := na(m15E9) ? c : m15E9 + 2.0 / 10.0 * (c - m15E9)
+    m15E21 := na(m15E21) ? c : m15E21 + 2.0 / 22.0 * (c - m15E21)
+    bearCnt15 := m15E9 < m15E21 ? bearCnt15 + 1 : 0
+add = request.security("USI:ADD", timeframe.period, close, lookahead=barmerge.lookahead_off)
+addUp = add > 0 and add > add[3]
+addDn = add < 0 and add < add[3]
+
+biasLong = h1E20 > h1E50 and h1C > h1E20 and m15E9 > m15E21
+biasShort = h1E20 < h1E50 and h1C < h1E20 and bearCnt15 >= 2
+
+pbL = low <= ema20 and close > ema50
+pbS = high >= ema20 and close < ema50
+trigL = pbL[1] and close > high[1]
+trigS = pbS[1] and close < low[1]
+
+winD = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ
+canEnter = flat and winD and chopOK and not fomcBlock
+longSig = canEnter and biasLong and addUp and trigL and nL < 2
+shortSig = canEnter and biasShort and addDn and trigS and nS < 2
+
+if longSig
+    st = math.min(low, low[1]) - 0.25 * atr
+    d = close - st
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        rPts := d
+        entRef := close
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("XL", "L", stop=stopPx)
+        nL += 1
+if shortSig
+    st = math.max(high, high[1]) + 0.25 * atr
+    d = st - close
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        tgtPx := close - 1.5 * d
+        rPts := d
+        entRef := close
+        trailOn := false
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("S1", "S", qty_percent=50, stop=stopPx, limit=tgtPx)
+        strategy.exit("S2", "S", stop=stopPx)
+        nS += 1
+
+if strategy.position_size > 0
+    strategy.exit("XL", "L", stop=stopPx)
+    if close < ema20 and barsIn >= 1
+        strategy.close("L", comment="trail EMA20")
+if strategy.position_size < 0
+    strategy.exit("S1", "S", qty_percent=50, stop=stopPx, limit=tgtPx)
+    strategy.exit("S2", "S", stop=stopPx)
+    if low <= tgtPx
+        trailOn := true
+    if trailOn and close > ema9
+        strategy.close("S", comment="trail EMA9")

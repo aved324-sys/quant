@@ -1,0 +1,1 @@
+{"id": "m004", "gen": 1, "agent": "Alpha", "kind": "failure", "date": "2026-11-20", "title": "Alpha eliminated in Gen 1 form (OOS touch 1 of 2)", "detail": "IS PF 0.71 (MES) / 1.05 (MNQ); OOS PF 0.78 / 0.96. Short side PF 0.62-0.98 everywhere. MES drawdown 56% at 1% risk.", "oosImpact": "OOS PF 0.78 (MES), 0.96 (MNQ): fail", "status": "failed"}

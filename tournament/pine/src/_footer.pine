@@ -1,0 +1,4 @@
+
+// ---------- end-of-day flatten ----------
+if hhmm >= 1550 or not inRTH
+    strategy.close_all(comment="EOD")

@@ -1,0 +1,63 @@
+
+// ================= AGENT GAMMA: Volatility compression -> expansion =================
+ema20 = ta.ema(close, 20)
+basis = ta.sma(close, 20)
+dev = 2.0 * ta.stdev(close, 20)
+bbU = basis + dev
+bbL = basis - dev
+[kcM, kcU, kcL] = ta.kc(close, 20, 1.5)
+sqzOn = bbU < kcU and bbL > kcL
+var int sqzCnt = 0
+sqzCnt := sqzOn ? sqzCnt + 1 : 0
+sqzBars = input.int(6, "Min squeeze bars", minval=2)
+release = not sqzOn and sqzOn[1] and sqzCnt[1] >= sqzBars
+M = ta.linreg(close - math.avg(math.avg(ta.highest(high, 20), ta.lowest(low, 20)), basis), 20, 0)
+atrSma = ta.sma(atr, 20)
+// short-only extra trigger: expansion without squeeze (crash legs)
+expDown = atr > 1.5 * atrSma and close < dL[1] and inRTH and not rthStart
+
+winG = ((hhmm >= 945 and hhmm < 1200) or (hhmm >= 1330 and hhmm < 1530)) and not deadZ
+canEnter = flat and winG and chopOK and not fomcBlock
+
+longSig = canEnter and release and M > 0 and M > M[1] and close > ema20 and atr > atr[5] and nL == 0
+shortSig = canEnter and close < ema20 and nS == 0 and ((release and M < 0 and M < M[1]) or expDown)
+
+if longSig
+    st = math.max(kcL, close - 1.5 * atr)
+    st := math.min(st, close - 0.5 * atr)
+    d = close - st
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        rPts := d
+        entRef := close
+        trailOn := false
+        strategy.entry("L", strategy.long, qty=q)
+        strategy.exit("XL", "L", stop=stopPx)
+        nL += 1
+if shortSig
+    st = math.min(kcU, close + 1.5 * atr)
+    st := math.max(st, close + 0.5 * atr)
+    d = st - close
+    q = f_qty(d)
+    if q >= 1
+        stopPx := st
+        tgtPx := close - 2.5 * d
+        rPts := d
+        entRef := close
+        strategy.entry("S", strategy.short, qty=q)
+        strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+        nS += 1
+
+if strategy.position_size > 0
+    strategy.exit("XL", "L", stop=stopPx)
+    if high >= entRef + rPts
+        trailOn := true
+    if trailOn and M < M[1] and M[1] < M[2]
+        strategy.close("L", comment="mom fade")
+    else if close < ema20
+        strategy.close("L", comment="trail EMA20")
+if strategy.position_size < 0
+    strategy.exit("XS", "S", stop=stopPx, limit=tgtPx)
+    if M > M[1] and M[1] > M[2]
+        strategy.close("S", comment="mom turn")

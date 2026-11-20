@@ -1,0 +1,532 @@
+<title>Quant Tournament & Strategy Evolution Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a research-desk ledger. Summary strip, then four hash-routed tabs; numbers in mono, verdicts as pills. */
+:root {
+  --bg: #f3f4f1;          /* paper with a faint green-grey bias */
+  --surface: #ffffff;
+  --sunken: #e9ebe6;
+  --ink: #1b2226;
+  --muted: #5d676c;
+  --line: #d5d9d2;
+  --accent: #1f5f8b;      /* ledger blue */
+  --accent-ink: #ffffff;
+  --pass: #17703f; --pass-bg: #e3f2e8;
+  --fail: #b42318; --fail-bg: #fbe9e7;
+  --pend: #a15c07; --pend-bg: #fdf1dc;
+  --na: #6b7479;   --na-bg: #eceee9;
+  --s-alpha: #2f63c9; --s-beta: #c96a1c; --s-gamma: #8250c4; --s-delta: #2f8783; --s-ens: #1b2226;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171a; --surface: #192024; --sunken: #0f1316; --ink: #e4e8e6; --muted: #98a3a8; --line: #2b3438;
+    --accent: #6fb2e0; --accent-ink: #0b1418;
+    --pass: #5cc98a; --pass-bg: #15301f; --fail: #f2836f; --fail-bg: #3a1a16; --pend: #e8b058; --pend-bg: #33260f; --na: #9aa3a7; --na-bg: #232b2f;
+    --s-alpha: #7aa2f2; --s-beta: #f0a159; --s-gamma: #b591ee; --s-delta: #5fc0ba; --s-ens: #e4e8e6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171a; --surface: #192024; --sunken: #0f1316; --ink: #e4e8e6; --muted: #98a3a8; --line: #2b3438;
+  --accent: #6fb2e0; --accent-ink: #0b1418;
+  --pass: #5cc98a; --pass-bg: #15301f; --fail: #f2836f; --fail-bg: #3a1a16; --pend: #e8b058; --pend-bg: #33260f; --na: #9aa3a7; --na-bg: #232b2f;
+  --s-alpha: #7aa2f2; --s-beta: #f0a159; --s-gamma: #b591ee; --s-delta: #5fc0ba; --s-ens: #e4e8e6;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1320px; margin: 0 auto; }
+.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-family: var(--font-head); text-wrap: balance; letter-spacing: -0.005em; }
+.eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.tab { border-bottom: 2px solid transparent; color: var(--muted); }
+.tab[aria-selected="true"] { border-color: var(--accent); color: var(--ink); }
+.tab:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+.p-pass { color: var(--pass); background: var(--pass-bg); }
+.p-fail { color: var(--fail); background: var(--fail-bg); }
+.p-pend { color: var(--pend); background: var(--pend-bg); }
+.p-na   { color: var(--na);   background: var(--na-bg); }
+table.lb { border-collapse: separate; border-spacing: 0; width: 100%; }
+table.lb th { position: sticky; top: 0; background: var(--sunken); color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.lb td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.lb th.l, table.lb td.l { text-align: left; }
+table.lb tr:hover td { background: var(--sunken); }
+.scroll-x { overflow-x: auto; }
+pre.code { background: var(--sunken); border: 1px solid var(--line); border-radius: 6px; padding: 12px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; overflow: auto; max-height: 460px; white-space: pre; }
+select, .btn { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font: inherit; }
+.btn { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.kind { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.recharts-cartesian-axis-tick-value { font-family: var(--font-mono); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = { corePreflight: true, theme: { extend: {
+    colors: { bg: 'var(--bg)', surface: 'var(--surface)', sunken: 'var(--sunken)', ink: 'var(--ink)', muted: 'var(--muted)', line: 'var(--line)', accent: 'var(--accent)' },
+    fontFamily: { head: 'var(--font-head)', mono: 'var(--font-mono)' } } } };
+</script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script>window.react = window.React;</script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+
+<div id="root"><div class="wrap" style="padding-block:32px"><p class="eyebrow">Quant Tournament</p><p>Loading the tracker…</p></div></div>
+
+<script>
+(function () {
+  const { useState, useEffect, useMemo, useRef } = React;
+  const html = htm.bind(React.createElement);
+  const R = window.Recharts || {};
+  const L = window.LucideReact || {};
+  const Icon = (name, props) => L[name] ? React.createElement(L[name], Object.assign({ size: 16, strokeWidth: 2, 'aria-hidden': true }, props || {})) : null;
+
+  const GATES = { pf: 1.45, dd: 12, trades: 150, degr: 25 };
+  const AGENTS = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Champion Ensemble'];
+  const INSTRUMENTS = ['SPX 0DTE', 'SPY', 'MES1!', 'MNQ1!'];
+  const AGENT_VAR = { Alpha: '--s-alpha', Beta: '--s-beta', Gamma: '--s-gamma', Delta: '--s-delta', 'Champion Ensemble': '--s-ens' };
+  const TABS = [
+    { id: 'leaderboard', label: 'Leaderboard & Gate Audit', icon: 'Trophy' },
+    { id: 'evolution', label: 'Evolution & Equity', icon: 'TrendingUp' },
+    { id: 'mutations', label: 'Mutation & Failure Log', icon: 'GitBranch' },
+    { id: 'deploy', label: 'Pine & Execution Specs', icon: 'Code2' },
+  ];
+
+  const f2 = (x) => (x == null || isNaN(x)) ? '—' : Number(x).toFixed(2);
+  const f1 = (x) => (x == null || isNaN(x)) ? '—' : Number(x).toFixed(1);
+  const pct = (x) => (x == null || isNaN(x)) ? '—' : (x > 0 ? '+' : '') + Number(x).toFixed(1) + '%';
+  const money = (x) => (x == null || isNaN(x)) ? '—' : (x < 0 ? '−$' : '$') + Math.abs(Math.round(x)).toLocaleString('en-US');
+
+  // ---------- theme tokens for SVG (re-read on theme change) ----------
+  function readTokens() {
+    const cs = getComputedStyle(document.documentElement);
+    const g = (n) => cs.getPropertyValue(n).trim();
+    const t = { ink: g('--ink'), muted: g('--muted'), line: g('--line'), pass: g('--pass'), fail: g('--fail'), pend: g('--pend'), surface: g('--surface'), accent: g('--accent') };
+    t.agent = {}; AGENTS.forEach(a => t.agent[a] = g(AGENT_VAR[a]));
+    return t;
+  }
+  function useTokens() {
+    const [tok, setTok] = useState(readTokens);
+    useEffect(() => {
+      const upd = () => setTok(readTokens());
+      const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      mq && mq.addEventListener && mq.addEventListener('change', upd);
+      const mo = new MutationObserver(upd); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+      return () => { mq && mq.removeEventListener && mq.removeEventListener('change', upd); mo.disconnect(); };
+    }, []);
+    return tok;
+  }
+
+  // ---------- gate audit ----------
+  function audit(row) {
+    if (row.status === 'PENDING') return { verdict: 'PENDING', gates: null };
+    const is = row.is || {}, oos = row.oos;
+    const pfBasis = oos ? oos.pf : is.pf;
+    const ddBasis = oos ? oos.maxDDPct : is.maxDDPct;
+    const n = (is.trades || 0) + (oos ? oos.trades : 0);
+    const degr = oos && is.pf ? Math.max(0, (is.pf - oos.pf) / is.pf * 100) : null;
+    const gates = {
+      pf: { ok: pfBasis >= GATES.pf, basis: oos ? 'OOS' : 'IS', val: pfBasis },
+      dd: { ok: ddBasis <= GATES.dd, basis: oos ? 'OOS' : 'IS', val: ddBasis },
+      trades: { ok: n >= GATES.trades, val: n },
+      degr: oos ? { ok: degr <= GATES.degr, val: degr } : { ok: null, val: null },
+    };
+    const anyFail = [gates.pf, gates.dd, gates.trades, gates.degr].some(g => g.ok === false);
+    let verdict;
+    if (anyFail) verdict = oos ? 'FAIL' : 'FAIL · IS';
+    else if (!oos) verdict = 'AWAITING OOS';
+    else verdict = 'PASS';
+    return { verdict, gates, degr, n };
+  }
+
+  function GateBadge({ label, g }) {
+    const cls = g.ok === true ? 'p-pass' : g.ok === false ? 'p-fail' : 'p-na';
+    const mark = g.ok === true ? '✓' : g.ok === false ? '✕' : '–';
+    return html`<span class=${'pill ' + cls} title=${label}>${mark} ${label}</span>`;
+  }
+  function Verdict({ v }) {
+    const cls = v === 'PASS' ? 'p-pass' : v.startsWith('FAIL') ? 'p-fail' : v === 'PENDING' ? 'p-pend' : 'p-na';
+    return html`<span class=${'pill ' + cls}>${v}</span>`;
+  }
+  function AgentDot({ a, tok }) { return html`<span class="dot" style=${{ background: tok.agent[a] || tok.muted }}></span>`; }
+
+  // ---------- Leaderboard ----------
+  function Leaderboard({ rows, gens, tok }) {
+    const [inst, setInst] = useState('All');
+    const latest = gens.length ? gens[gens.length - 1].gen : null;
+    const [gen, setGen] = useState('latest');
+    const genSel = gen === 'latest' ? latest : gen === 'all' ? null : Number(gen);
+    const shown = rows
+      .filter(r => (inst === 'All' || r.instrument === inst) && (genSel == null || r.gen === genSel))
+      .map(r => ({ r, a: audit(r) }))
+      .sort((x, y) => {
+        const px = x.r.status === 'PENDING' ? -9 : (x.r.oos ? x.r.oos.pf : x.r.is.pf);
+        const py = y.r.status === 'PENDING' ? -9 : (y.r.oos ? y.r.oos.pf : y.r.is.pf);
+        return py - px;
+      });
+    return html`
+      <section class="flex flex-col gap-4">
+        <div class="flex flex-wrap items-end gap-3">
+          <label class="flex flex-col gap-1"><span class="eyebrow">Instrument</span>
+            <select id="f-inst" value=${inst} onChange=${e => setInst(e.target.value)}>
+              <option>All</option>${INSTRUMENTS.map(i => html`<option key=${i}>${i}</option>`)}
+            </select></label>
+          <label class="flex flex-col gap-1"><span class="eyebrow">Generation</span>
+            <select id="f-gen" value=${gen} onChange=${e => setGen(e.target.value)}>
+              <option value="latest">Latest (Gen ${latest ?? '—'})</option>
+              <option value="all">All generations</option>
+              ${gens.map(g => html`<option key=${g.gen} value=${g.gen}>Gen ${g.gen}</option>`)}
+            </select></label>
+          <p class="text-muted text-xs" style=${{ maxWidth: '62ch' }}>
+            Gates: OOS PF ≥ ${GATES.pf} · Max DD ≤ ${GATES.dd}% · Trades ≥ ${GATES.trades} (IS + OOS) · PF degradation ≤ ${GATES.degr}%.
+            Cells without an out-of-sample run are screened on in-sample numbers and marked “FAIL · IS”.
+          </p>
+        </div>
+        <div class="card scroll-x">
+          <table class="lb">
+            <thead><tr>
+              <th class="l">Agent</th><th class="l">Instrument</th><th class="l">Verdict</th><th>Gen</th><th>Trades</th>
+              <th>PF IS</th><th>PF OOS</th><th>Degr.</th><th>Net</th><th>Win</th>
+              <th>Long W / PF</th><th>Short W / PF</th><th>Max DD</th><th>Sharpe</th><th>Avg hold</th><th>§1256</th>
+              <th class="l">Gate audit</th>
+            </tr></thead>
+            <tbody>
+              ${shown.length === 0 && html`<tr><td class="l" colspan="17">No cells match this filter.</td></tr>`}
+              ${shown.map(({ r, a }, i) => {
+                if (r.status === 'PENDING') return html`
+                  <tr key=${'p' + i}>
+                    <td class="l"><span class="inline-flex items-center gap-2"><${AgentDot} a=${r.agent} tok=${tok}/>${r.agent}</span></td>
+                    <td class="l">${r.instrument}</td><td class="l"><${Verdict} v="PENDING"/></td><td class="num">${r.gen}</td>
+                    <td class="l text-muted" colspan="12" style=${{ whiteSpace: 'normal', minWidth: '320px' }}>${r.reason}</td>
+                    <td class="l"><span class="pill p-na">MODELED · not run</span></td>
+                  </tr>`;
+                const is = r.is, oos = r.oos, m = oos || is;
+                return html`
+                  <tr key=${'r' + i}>
+                    <td class="l"><span class="inline-flex items-center gap-2"><${AgentDot} a=${r.agent} tok=${tok}/>${r.agent}</span></td>
+                    <td class="l">${r.instrument} <span class="text-muted text-xs">${r.timeframe}</span></td>
+                    <td class="l"><${Verdict} v=${a.verdict}/></td>
+                    <td class="num">${r.gen}</td>
+                    <td class="num">${a.n}</td>
+                    <td class="num">${f2(is.pf)}</td>
+                    <td class="num">${oos ? f2(oos.pf) : html`<span class="text-muted">not run</span>`}</td>
+                    <td class="num">${a.degr == null ? '—' : f1(a.degr) + '%'}</td>
+                    <td class="num" style=${{ color: m.netPct < 0 ? tok.fail : tok.pass }}>${pct(m.netPct)}</td>
+                    <td class="num">${f1(m.winRate)}%</td>
+                    <td class="num">${f1(m.longWinRate)}% / ${f2(m.longPF)}</td>
+                    <td class="num">${f1(m.shortWinRate)}% / ${f2(m.shortPF)}</td>
+                    <td class="num">${f1(m.maxDDPct)}%</td>
+                    <td class="num">${f2(m.sharpe)}</td>
+                    <td class="num">${Math.round(m.avgMinutes)}m</td>
+                    <td class="num">${Math.round((r.section1256Share ?? 0) * 100)}%</td>
+                    <td class="l"><span class="inline-flex gap-1">
+                      <${GateBadge} label=${'PF ' + a.gates.pf.basis} g=${a.gates.pf}/>
+                      <${GateBadge} label="DD" g=${a.gates.dd}/>
+                      <${GateBadge} label="N" g=${a.gates.trades}/>
+                      <${GateBadge} label="Degr" g=${a.gates.degr}/>
+                    </span></td>
+                  </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted text-xs">Metric columns show OOS values when an OOS run exists, otherwise IS. Hold time = average bars × 5 minutes. Futures and SPX are Section 1256 (60/40); SPY options are not.</p>
+      </section>`;
+  }
+
+  // ---------- Evolution ----------
+  function ChartFrame({ title, note, children, h }) {
+    return html`<div class="card p-4 flex flex-col gap-2" style=${{ minWidth: 0 }}>
+      <h3 class="text-base font-semibold">${title}</h3>
+      ${note && html`<p class="text-muted text-xs">${note}</p>`}
+      <div style=${{ width: '100%', height: (h || 280) + 'px' }}>${children}</div>
+    </div>`;
+  }
+  function Evolution({ rows, gens, tok }) {
+    const [inst, setInst] = useState('MNQ1!');
+    const futRows = rows.filter(r => r.status !== 'PENDING');
+    const latest = gens.length ? gens[gens.length - 1].gen : null;
+    const agents = ['Alpha', 'Beta', 'Gamma', 'Delta'];
+    const byGen = gens.map(g => {
+      const o = { gen: 'Gen ' + g.gen };
+      agents.forEach(a => {
+        const r = futRows.find(x => x.gen === g.gen && x.agent === a && x.instrument === inst);
+        o[a + ' IS'] = r ? r.is.pf : null;
+        o[a + ' OOS'] = r && r.oos ? r.oos.pf : null;
+        o[a + ' net'] = r ? (r.oos ? r.oos.netPct : r.is.netPct) : null;
+      });
+      return o;
+    });
+    const cells = futRows.filter(r => r.gen === latest).map(r => ({
+      cell: r.agent + ' · ' + r.instrument.replace('1!', ''), IS: r.is.pf, OOS: r.oos ? r.oos.pf : null, agent: r.agent,
+    }));
+    if (!R.ResponsiveContainer) return html`<div class="card p-4">Charts need the Recharts library, which did not load. Reload the page to try again.</div>`;
+    const axis = { stroke: tok.line, tick: { fill: tok.muted }, tickLine: { stroke: tok.line } };
+    const tip = { contentStyle: { background: tok.surface, border: '1px solid ' + tok.line, color: tok.ink, fontSize: 12 }, labelStyle: { color: tok.ink } };
+    const single = gens.length < 2;
+    return html`
+      <section class="flex flex-col gap-4">
+        <div class="flex flex-wrap items-end gap-3">
+          <label class="flex flex-col gap-1"><span class="eyebrow">Instrument for trend lines</span>
+            <select id="f-evo-inst" value=${inst} onChange=${e => setInst(e.target.value)}>
+              <option>MES1!</option><option>MNQ1!</option>
+            </select></label>
+          ${single && html`<p class="text-muted text-xs" style=${{ maxWidth: '64ch' }}>Only Gen 1 exists so far, so each trend line is a single point. Lines form as later generations are appended.</p>`}
+        </div>
+        <div class="grid gap-4" style=${{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))' }}>
+          <${ChartFrame} title=${'Profit factor by generation · ' + inst} note="Solid = out-of-sample, dashed = in-sample. Upper line is the 1.45 gate, lower line is break-even.">
+            <${R.ResponsiveContainer}>
+              <${R.LineChart} data=${byGen} margin=${{ top: 8, right: 16, bottom: 4, left: 0 }}>
+                <${R.CartesianGrid} stroke=${tok.line} strokeDasharray="2 4" vertical=${false}/>
+                <${R.XAxis} dataKey="gen" ...${axis}/>
+                <${R.YAxis} domain=${[0.5, 1.6]} ticks=${[0.6, 0.8, 1.0, 1.2, 1.45]} ...${axis}/>
+                <${R.Tooltip} ...${tip} formatter=${v => v == null ? '—' : Number(v).toFixed(2)}/>
+                <${R.ReferenceLine} y=${1.45} stroke=${tok.pass} strokeDasharray="5 3"/>
+                <${R.ReferenceLine} y=${1.0} stroke=${tok.muted}/>
+                ${agents.map(a => html`<${R.Line} key=${a + 'is'} type="monotone" dataKey=${a + ' IS'} stroke=${tok.agent[a]} strokeDasharray="4 3" dot=${{ r: 4, fill: tok.surface, stroke: tok.agent[a], strokeWidth: 2 }} connectNulls isAnimationActive=${false}/>`)}
+                ${agents.map(a => html`<${R.Line} key=${a + 'oos'} type="monotone" dataKey=${a + ' OOS'} stroke=${tok.agent[a]} strokeWidth=${2.5} dot=${{ r: 5, fill: tok.agent[a] }} connectNulls isAnimationActive=${false}/>`)}
+                <${R.Legend} wrapperStyle=${{ fontSize: 12, color: tok.muted }}/>
+              <//>
+            <//>
+          <//>
+          <${ChartFrame} title=${'Equity growth by generation · ' + inst} note="Net return over the tested window at 1% risk per trade on $50k (OOS where run, else IS).">
+            <${R.ResponsiveContainer}>
+              <${R.BarChart} data=${byGen} margin=${{ top: 8, right: 16, bottom: 4, left: 0 }}>
+                <${R.CartesianGrid} stroke=${tok.line} strokeDasharray="2 4" vertical=${false}/>
+                <${R.XAxis} dataKey="gen" ...${axis}/>
+                <${R.YAxis} unit="%" ...${axis}/>
+                <${R.Tooltip} ...${tip} formatter=${v => v == null ? '—' : pct(v)}/>
+                <${R.ReferenceLine} y=${0} stroke=${tok.muted}/>
+                ${agents.map(a => html`<${R.Bar} key=${a} dataKey=${a + ' net'} name=${a} fill=${tok.agent[a]} radius=${[2, 2, 0, 0]} isAnimationActive=${false}/>`)}
+                <${R.Legend} wrapperStyle=${{ fontSize: 12, color: tok.muted }}/>
+              <//>
+            <//>
+          <//>
+        </div>
+        <${ChartFrame} title=${'Gen ' + (latest ?? '—') + ' · in-sample vs out-of-sample PF per cell'} note="Every cell sits below the 1.45 gate. Only Alpha has an OOS run; the others failed in-sample, so their OOS data was not looked at." h=${300}>
+          <${R.ResponsiveContainer}>
+            <${R.BarChart} data=${cells} margin=${{ top: 8, right: 16, bottom: 4, left: 0 }}>
+              <${R.CartesianGrid} stroke=${tok.line} strokeDasharray="2 4" vertical=${false}/>
+              <${R.XAxis} dataKey="cell" interval=${0} ...${axis} tick=${{ fill: tok.muted, fontSize: 10 }}/>
+              <${R.YAxis} domain=${[0, 1.6]} ticks=${[0, 0.5, 1.0, 1.45]} ...${axis}/>
+              <${R.Tooltip} ...${tip} formatter=${v => v == null ? 'not run' : Number(v).toFixed(2)}/>
+              <${R.ReferenceLine} y=${1.45} stroke=${tok.pass} strokeDasharray="5 3" label=${{ value: 'gate 1.45', fill: tok.pass, fontSize: 11, position: 'insideTopRight' }}/>
+              <${R.ReferenceLine} y=${1.0} stroke=${tok.muted}/>
+              <${R.Bar} dataKey="IS" fill=${tok.muted} radius=${[2, 2, 0, 0]} isAnimationActive=${false}/>
+              <${R.Bar} dataKey="OOS" fill=${tok.accent} radius=${[2, 2, 0, 0]} isAnimationActive=${false}/>
+              <${R.Legend} wrapperStyle=${{ fontSize: 12, color: tok.muted }}/>
+            <//>
+          <//>
+        <//>
+        <p class="text-muted text-xs" style=${{ maxWidth: '80ch' }}>Trade-by-trade equity curves need each run's full trade list. TradingView returns at most 200 trades per call, so Gen 2 runs will export trade logs and these charts will gain per-trade curves.</p>
+      </section>`;
+  }
+
+  // ---------- Mutation log ----------
+  const KIND = { failure: ['Failure', 'p-fail', 'XCircle'], mutation: ['Mutation', 'p-pend', 'FlaskConical'], infra: ['Infrastructure', 'p-na', 'Wrench'], note: ['Finding', 'p-pass', 'Lightbulb'] };
+  function Mutations({ muts, tok }) {
+    const [agent, setAgent] = useState('All');
+    const list = muts.filter(m => agent === 'All' || m.agent === agent || m.agent === 'All')
+      .slice().sort((a, b) => (a.gen - b.gen) || String(a.id).localeCompare(String(b.id)));
+    const groups = {};
+    list.forEach(m => { (groups[m.gen] = groups[m.gen] || []).push(m); });
+    return html`
+      <section class="flex flex-col gap-4">
+        <label class="flex flex-col gap-1" style=${{ width: 'fit-content' }}><span class="eyebrow">Agent</span>
+          <select id="f-mut-agent" value=${agent} onChange=${e => setAgent(e.target.value)}>
+            <option>All</option>${['Alpha', 'Beta', 'Gamma', 'Delta'].map(a => html`<option key=${a}>${a}</option>`)}
+          </select></label>
+        ${Object.keys(groups).length === 0 && html`<p class="text-muted">No log entries for this agent yet.</p>`}
+        ${Object.keys(groups).map(g => html`
+          <div key=${g} class="flex flex-col gap-3">
+            <h2 class="text-lg font-semibold">Generation ${g}</h2>
+            <ol class="flex flex-col gap-3" style=${{ borderLeft: '2px solid ' + tok.line, marginLeft: '6px', paddingLeft: '16px' }}>
+              ${groups[g].map(m => {
+                const k = KIND[m.kind] || KIND.note;
+                return html`<li key=${m.id} class="card p-4 flex flex-col gap-2" style=${{ minWidth: 0 }}>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class=${'pill ' + k[1]}>${Icon(k[2], { size: 12 })}${k[0]}</span>
+                    <span class="text-xs text-muted mono">${m.id} · ${m.date}</span>
+                    <span class="inline-flex items-center gap-1 text-xs">${m.agent !== 'All' && html`<${AgentDot} a=${m.agent} tok=${tok}/>`}${m.agent === 'All' ? 'All agents' : m.agent}</span>
+                    <span class=${'pill ' + (m.status === 'applied' ? 'p-pass' : m.status === 'proposed' ? 'p-pend' : m.status === 'failed' ? 'p-fail' : 'p-na')}>${m.status}</span>
+                  </div>
+                  <h3 class="text-base font-semibold">${m.title}</h3>
+                  <p style=${{ maxWidth: '78ch' }}>${m.detail}</p>
+                  <p class="text-xs"><span class="eyebrow">OOS impact</span> <span class="mono">${m.oosImpact}</span></p>
+                </li>`;
+              })}
+            </ol>
+          </div>`)}
+      </section>`;
+  }
+
+  // ---------- Deploy / specs ----------
+  function CopyBlock({ id, label, sub, code, status }) {
+    const pre = useRef(null);
+    const [msg, setMsg] = useState('');
+    const copy = () => {
+      const done = (t) => { setMsg(t); setTimeout(() => setMsg(''), 2200); };
+      try {
+        navigator.clipboard.writeText(code).then(() => done('Copied'), () => { selectAll(); done('Selected. Press Ctrl+C or ⌘C'); });
+      } catch (e) { selectAll(); done('Selected. Press Ctrl+C or ⌘C'); }
+    };
+    const selectAll = () => { const r = document.createRange(); r.selectNodeContents(pre.current); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); };
+    return html`<details class="card" id=${id}>
+      <summary class="p-4 flex flex-wrap items-center gap-3 cursor-pointer">
+        <span class="font-semibold">${label}</span><span class="text-xs text-muted mono">${sub}</span>${status}
+      </summary>
+      <div class="px-4 pb-4 flex flex-col gap-2" style=${{ minWidth: 0 }}>
+        <div class="flex items-center gap-3"><button class="btn btn-primary" onClick=${copy}>${Icon('Copy', { size: 14 })} Copy Pine v6</button><span class="text-xs text-muted" aria-live="polite">${msg}</span></div>
+        <pre class="code" ref=${pre}>${code}</pre>
+      </div>
+    </details>`;
+  }
+  function RuleTable({ title, rows }) {
+    return html`<div class="card p-4 flex flex-col gap-2" style=${{ minWidth: 0 }}>
+      <h3 class="text-base font-semibold">${title}</h3>
+      <dl class="grid gap-x-4 gap-y-2" style=${{ gridTemplateColumns: 'minmax(110px, 34%) 1fr' }}>
+        ${(rows || []).map((r, i) => html`<${React.Fragment} key=${i}><dt class="text-muted text-sm">${r[0]}</dt><dd class="text-sm">${r[1]}</dd><//>`)}
+      </dl>
+    </div>`;
+  }
+  function Deploy({ deploy }) {
+    if (!deploy) return html`<p class="text-muted">Execution specs have not been written yet.</p>`;
+    const pine = deploy.pine || {};
+    const champ = deploy.champion;
+    return html`<section class="flex flex-col gap-4">
+      <div class=${'card p-4 flex gap-3 items-start'} style=${{ borderColor: champ ? 'var(--pass)' : 'var(--fail)' }}>
+        <span style=${{ color: champ ? 'var(--pass)' : 'var(--fail)', marginTop: '2px' }}>${Icon(champ ? 'ShieldCheck' : 'ShieldAlert', { size: 20 })}</span>
+        <div class="flex flex-col gap-1">
+          <h2 class="text-lg font-semibold">${champ ? 'Champion Ensemble: ' + champ.name : 'No Champion Ensemble yet'}</h2>
+          <p style=${{ maxWidth: '80ch' }}>${deploy.championNote}</p>
+          <p class="text-sm text-muted" style=${{ maxWidth: '80ch' }}><strong>Execution path:</strong> ${deploy.execution}</p>
+        </div>
+      </div>
+      <div class="grid gap-4" style=${{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))' }}>
+        <${RuleTable} title="SPX (SPXW) 0DTE vertical credit spreads" rows=${deploy.spxRules}/>
+        <${RuleTable} title="SPY 0DTE / 2DTE long directional options" rows=${deploy.spyRules}/>
+      </div>
+      <div class="flex flex-col gap-2">
+        <h2 class="text-lg font-semibold">Pine Script v6 sources</h2>
+        <p class="text-muted text-sm" style=${{ maxWidth: '80ch' }}>Bar-close signals, next-bar-open fills, no lookahead, and higher timeframes rebuilt from confirmed closes. Friction: $1 per contract per side plus 1 tick per side. Copy into TradingView's Pine Editor; the strategy sets 10% margin itself.</p>
+        ${Object.keys(pine).map(k => html`<${CopyBlock} key=${k} id=${'pine-' + k} label=${'TQ ' + k[0].toUpperCase() + k.slice(1) + ' · Gen 1'} sub=${(pine[k].split('\n').length) + ' lines'} code=${pine[k]} status=${html`<span class="pill p-fail">Research candidate · failed Gen 1</span>`}/>`)}
+      </div>
+    </section>`;
+  }
+
+  // ---------- App ----------
+  function useHash() {
+    const get = () => { const h = (location.hash || '').replace('#', ''); return TABS.some(t => t.id === h) ? h : 'leaderboard'; };
+    const [tab, setTab] = useState(get);
+    useEffect(() => { const f = () => setTab(get()); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f); }, []);
+    return [tab, (id) => { location.hash = id; setTab(id); }];
+  }
+
+  function App() {
+    const tok = useTokens();
+    const [tab, setTab] = useHash();
+    const [gens, setGens] = useState([]);
+    const [muts, setMuts] = useState([]);
+    const [deploy, setDeploy] = useState(null);
+    const [phase, setPhase] = useState('loading'); // loading | ready | nodb | slow | error
+    const [errMsg, setErrMsg] = useState('');
+
+    useEffect(() => {
+      let unsubs = [], timer = null, alive = true;
+      if (!window.claude || !window.claude.use) { setPhase('nodb'); return; }
+      timer = setTimeout(() => { if (alive) setPhase(p => p === 'loading' ? 'slow' : p); }, 10000);
+      const fail = (e) => { clearTimeout(timer); setErrMsg((e && e.code) || 'unavailable'); setPhase('error'); };
+      window.claude.use('db').then(db => {
+        if (!alive) return;
+        if (!db) { clearTimeout(timer); setPhase('nodb'); return; }
+        unsubs.push(db.collection('generations').orderBy('gen').onSnapshot(s => {
+          setGens(s.docs.map(d => d.data()));
+          if (!s.metadata.fromCache) { clearTimeout(timer); setPhase('ready'); }
+        }, fail));
+        unsubs.push(db.collection('mutations').onSnapshot(s => setMuts(s.docs.map(d => d.data())), fail));
+        unsubs.push(db.doc('deploy/current').onSnapshot(s => setDeploy(s.exists ? s.data() : null), fail));
+      });
+      return () => { alive = false; clearTimeout(timer); unsubs.forEach(u => u()); };
+    }, []);
+
+    const rows = useMemo(() => {
+      const out = [];
+      gens.forEach(g => {
+        (g.results || []).forEach(r => out.push(Object.assign({ gen: g.gen }, r)));
+        (g.pending || []).forEach(r => out.push(Object.assign({ gen: g.gen }, r)));
+      });
+      return out;
+    }, [gens]);
+
+    const latest = gens.length ? gens[gens.length - 1] : null;
+    const latestRows = latest ? rows.filter(r => r.gen === latest.gen) : [];
+    const tested = latestRows.filter(r => r.status !== 'PENDING');
+    const passing = tested.filter(r => audit(r).verdict === 'PASS').length;
+    const best = tested.slice().sort((a, b) => b.is.pf - a.is.pf)[0];
+    const touches = latest && latest.oosTouches ? latest.oosTouches : {};
+    const touchUsed = Object.values(touches).reduce((s, v) => s + v, 0);
+    const pendingN = latestRows.filter(r => r.status === 'PENDING').length;
+
+    const Kpi = ({ label, value, sub, tone }) => html`<div class="card p-4 flex flex-col gap-1" style=${{ minWidth: 0 }}>
+      <span class="eyebrow">${label}</span>
+      <span class="num text-2xl font-semibold" style=${{ color: tone || tok.ink }}>${value}</span>
+      <span class="text-xs text-muted">${sub}</span></div>`;
+
+    let body;
+    if (phase === 'nodb') body = html`<div class="card p-6 flex flex-col gap-2"><h2 class="text-lg font-semibold">Tournament data isn't available in this view</h2><p style=${{ maxWidth: '70ch' }}>The tracker reads its generations, mutation log and execution specs from this page's database. Open the page in claude.ai while signed in to load them.</p></div>`;
+    else if (phase === 'error') body = html`<div class="card p-6 flex flex-col gap-2"><h2 class="text-lg font-semibold">The tournament data couldn't be read</h2><p>The data store returned “${errMsg}”. Reload the page to try again.</p></div>`;
+    else if (!latest) body = html`<div class="card p-6 flex flex-col gap-2"><h2 class="text-lg font-semibold">${phase === 'slow' ? 'Still waiting for tournament data' : 'Loading tournament data…'}</h2><p class="text-muted" style=${{ maxWidth: '70ch' }}>${phase === 'slow' ? "The data store hasn't answered yet. It may be unreachable from this network. The page keeps trying." : 'Generations, the mutation log and execution specs appear here once the data store answers. Claude appends each new generation after a backtest run.'}</p></div>`;
+    else body = html`
+      ${phase === 'slow' && html`<p class="text-xs" style=${{ color: tok.pend }}>Showing saved data. The data store hasn't confirmed it yet, so it may be out of date.</p>`}
+      <div class="grid gap-3" style=${{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))' }}>
+        <${Kpi} label="Cells passing all gates" value=${passing + ' / ' + tested.length} sub=${'Gen ' + latest.gen + ' futures cells (MES, MNQ)'} tone=${passing ? tok.pass : tok.fail}/>
+        <${Kpi} label="Best in-sample PF" value=${best ? f2(best.is.pf) : '—'} sub=${best ? best.agent + ' · ' + best.instrument + ' · ' + best.is.trades + ' trades' : ''}/>
+        <${Kpi} label="OOS looks used" value=${touchUsed + ' / 8'} sub=${'2 per agent. ' + Object.keys(touches).filter(k => touches[k]).map(k => k + ' ' + touches[k] + '/2').join(', ')}/>
+        <${Kpi} label="Options cells pending" value=${pendingN} sub="SPX and SPY legs need the modeled pricing run" tone=${pendingN ? tok.pend : tok.ink}/>
+      </div>
+      <p class="text-sm" style=${{ maxWidth: '96ch' }}><span class="eyebrow">Gen ${latest.gen} summary</span> ${latest.summary}</p>
+      <nav class="flex gap-4 border-b border-line overflow-x-auto" role="tablist" aria-label="Tracker sections">
+        ${TABS.map(t => html`<button key=${t.id} role="tab" aria-selected=${tab === t.id} class="tab py-2 inline-flex items-center gap-2 whitespace-nowrap font-medium" onClick=${() => setTab(t.id)}>${Icon(t.icon)}${t.label}</button>`)}
+      </nav>
+      <div role="tabpanel">
+        ${tab === 'leaderboard' && html`<${Leaderboard} rows=${rows} gens=${gens} tok=${tok}/>`}
+        ${tab === 'evolution' && html`<${Evolution} rows=${rows} gens=${gens} tok=${tok}/>`}
+        ${tab === 'mutations' && html`<${Mutations} muts=${muts} tok=${tok}/>`}
+        ${tab === 'deploy' && html`<${Deploy} deploy=${deploy}/>`}
+      </div>`;
+
+    return html`
+      <header class="bg-surface border-b border-line">
+        <div class="wrap flex flex-wrap items-end justify-between gap-3" style=${{ paddingBlock: '20px' }}>
+          <div class="flex flex-col gap-1">
+            <span class="eyebrow">SPX 0DTE · SPY · MES1! · MNQ1!  —  4 agents, 2 auditors</span>
+            <h1 class="text-2xl font-bold">Quant Tournament & Strategy Evolution Tracker</h1>
+          </div>
+          <div class="text-xs text-muted mono text-right">
+            ${latest ? 'Gen ' + latest.gen + ' · ' + latest.date + ' · ' + (latest.config ? latest.config.isWindow + ' IS / ' + latest.config.oosWindow + ' OOS' : '') : ''}
+          </div>
+        </div>
+      </header>
+      <main class="wrap flex flex-col gap-5" style=${{ paddingBlock: '20px 48px' }}>${body}</main>`;
+  }
+
+  try {
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  } catch (e) {
+    document.getElementById('root').innerHTML = '<div class="wrap" style="padding-block:32px"><p>The tracker could not start because a library failed to load. Reload the page to try again.</p></div>';
+  }
+})();
+</script>
