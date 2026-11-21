@@ -6,7 +6,7 @@ strategy("TQ H3 Intraday Momentum MNQ", overlay=true, calc_on_every_tick=false, 
 // The in-script statistics are stamped into the comment of one marker trade opened after statsTime (it stays open,
 // so it does not touch closed-trade performance).
 costPts = input.float(1.5, "Round-trip cost per contract in index points ($2 fees + 2 ticks = $3 = 1.5 pts)")
-statsTime = input.time(timestamp("America/New_York", 2025, 6, 27, 16, 30), "Stamp statistics after")
+statsTime = timestamp("America/New_York", 2025, 6, 27, 16, 30)  // stamp statistics after the last IS session
 
 tz = "America/New_York"
 hhmm = hour(time, tz) * 100 + minute(time, tz)

@@ -11,7 +11,7 @@ skLo = input.float(0.10, "Put skew, low book")
 skMid = input.float(0.20, "Put skew, mid book")
 skHi = input.float(0.30, "Put skew, high book")
 callSkew = input.float(0.0, "Call IV reduction per 1% OTM")
-atmScale = input.float(1.0, "ATM IV = VIX1D x this (set from the anchor check)")
+atmScale = input.float(0.83, "ATM IV = VIX1D x this (anchor check 2026-11-21: real/VIX1D = 0.82, 0.86, 0.82)")
 slipVert = input.float(0.10, "Slippage per vertical per fill ($ premium)")
 feeLeg = input.float(1.0, "Fee per contract per leg per side ($)")
 wing = input.float(10, "Wing width (points)")
@@ -56,7 +56,7 @@ vix3m = request.security("CBOE:VIX3M", timeframe.period, close, lookahead=barmer
 sig = vix1d / 100.0 * atmScale
 
 // FOMC + CPI + NFP + PCE release days (TradingView economic calendar)
-var events = array.from(__EVENTS__)
+var events = array.from(20251120, 20251205, 20251210, 20251216, 20251218, 20260109, 20260113, 20260122, 20260128, 20260211, 20260213, 20260220, 20260306, 20260311, 20260313, 20260318, 20260403, 20260409, 20260410, 20260429, 20260430, 20260508, 20260512, 20260528, 20260605, 20260610, 20260617, 20260625, 20260702, 20260714, 20260729, 20260730)
 isEvent = array.includes(events, dInt)
 gapBig = not na(dATR) and not na(pdC) and math.abs(rthOpen - pdC) > dATR
 termInv = not na(vix3m) and vixC > vix3m
