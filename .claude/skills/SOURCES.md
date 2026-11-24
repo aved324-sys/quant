@@ -3,6 +3,7 @@
 | Skills | Source | Commit | License |
 | --- | --- | --- | --- |
 | `arena/` | https://github.com/Jakeschincariol/arena-skill | df07b8e | MIT |
+| `socratic-tutor/` | https://github.com/janestreet/agent_skills (`socratic-tutor/`) | 469868f | MIT |
 | `trader-*` (11) | https://github.com/Jakeschincariol/day-trader-skill | 3d0f4ef | MIT |
 | all others | https://github.com/tradermonty/claude-trading-skills (`skills/`) | 3bd4b7a | MIT |
 
